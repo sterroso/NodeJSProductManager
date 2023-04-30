@@ -1,4 +1,4 @@
-export default {
+const USER_ROLES = {
   /* -------------------------- Normal (default) user ------------------------- */
   USER: {
     name: "user",
@@ -192,3 +192,13 @@ export default {
     },
   },
 };
+
+export const USER_ROLES_NAMES = Object.entries(USER_ROLES).map(
+  (item) => item[1].name
+);
+
+export const DEFAULT_USER_ROLE = USER_ROLES.USER;
+
+export const DEFAULT_USER_ROLE_NAME = DEFAULT_USER_ROLE.name;
+
+export default USER_ROLES;

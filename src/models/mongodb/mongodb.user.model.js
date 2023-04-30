@@ -1,6 +1,12 @@
 import { Schema, model, Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
+import USER_ROLES_NAMES, {
+  DEFAULT_USER_ROLE_NAME,
+} from "../../constants/user.roles.js";
+import USER_GENDERS, {
+  DEFAULT_USER_GENDER,
+} from "../../constants/user.genders.js";
 import CartModel from "./mongodb.cart.model.js";
 
 export const UserSchema = new Schema(
@@ -41,13 +47,14 @@ export const UserSchema = new Schema(
     gender: {
       type: String,
       required: true,
-      enum: ["female", "male", "other", "not specified"],
-      default: "not specified",
+      enum: USER_GENDERS,
+      default: DEFAULT_USER_GENDER,
     },
-    roles: {
-      type: [String],
+    role: {
+      type: String,
       required: true,
-      default: ["user"],
+      enum: USER_ROLES_NAMES,
+      default: DEFAULT_USER_ROLE_NAME,
     },
     cart: {
       type: Types.ObjectId,
