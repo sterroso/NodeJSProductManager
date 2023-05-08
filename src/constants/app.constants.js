@@ -14,3 +14,6 @@ export const DEFAULT_PAGE = 1;
 
 // API server port
 export const PORT = 3000;
+
+// Default salt rounds for bcrypt hashing
+export const DEFAULT_SALT_ROUNDS = 10;

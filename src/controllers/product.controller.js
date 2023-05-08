@@ -1,74 +1,14 @@
-import * as ProductService from "../services/mongodb/mongodb.product.service.js";
+// import * as ProductService from "../services/mongodb/mongodb.product.service.js";
+import { ProductService } from "../services/index.js";
+import PaginatedQueryParser from "../utils/PaginatedQueryParser.js";
 import PaginatedResponseObject from "../common/paginatedResponseObject.js";
 import ResponseObject from "../common/responseObject.js";
 import HttpStatus from "../constants/http.status.js";
-import {
-  PAGINATE,
-  DEFAULT_LIMIT,
-  DEFAULT_PAGE,
-} from "../constants/app.constants.js";
-
-const isValidIntOption = (value, min = 1) => {
-  const numValue = Number(value ?? min - 1);
-
-  return !isNaN(numValue) && numValue >= min && numValue % 1 === 0;
-};
 
 export const getAllProducts = async (req, res) => {
   let responseObject = new PaginatedResponseObject();
 
-  const {
-    limit,
-    page,
-    offset,
-    search,
-    category,
-    sortByTitle,
-    sortByCategory,
-    sortByPrice,
-  } = req.query;
-
-  const options = {
-    customLabels: PAGINATE.CUSTOM_LABELS,
-  };
-
-  options.limit = isValidIntOption(limit) ? Number(limit) : DEFAULT_LIMIT;
-
-  options.page = isValidIntOption(page) ? Number(page) : DEFAULT_PAGE;
-
-  if (isValidIntOption(offset, 0)) {
-    options.offset = Number(offset);
-  }
-
-  if (/^asc|desc$/i.test(sortByTitle)) {
-    options.sort = { title: /^asc$/i.test(sortByTitle) ? 1 : -1 };
-  }
-
-  if (/^asc|desc$/i.test(sortByCategory)) {
-    if (options?.sort) {
-      options.sort.category = /^asc$/i.test(sortByCategory) ? 1 : -1;
-    } else {
-      options.sort = { category: /^asc$/i.test(sortByCategory) ? 1 : -1 };
-    }
-  }
-
-  if (/^asc|desc$/i.test(sortByPrice)) {
-    if (options?.sort) {
-      options.sort.price = /^asc$/i.test(sortByPrice) ? 1 : -1;
-    } else {
-      options.sort = { price: /^asc$/i.test(sortByPrice) ? 1 : -1 };
-    }
-  }
-
-  const query = { deleted: false };
-
-  if (search) {
-    query.$text = { $search: `${search}` };
-  }
-
-  if (category) {
-    query.category = new RegExp(`${category}`, "gi");
-  }
+  const { query, options } = PaginatedQueryParser(req.query);
 
   try {
     const results = await ProductService.getAllProducts(query, options);

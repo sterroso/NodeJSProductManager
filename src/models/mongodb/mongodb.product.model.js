@@ -1,6 +1,7 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
+import CategoryModel from "./mongodb.category.model";
 
 export const ProductSchema = new Schema(
   {
@@ -38,8 +39,9 @@ export const ProductSchema = new Schema(
       },
     },
     category: {
-      type: String,
-      required: [true, "Product category name is required."],
+      type: Types.ObjectId,
+      ref: CategoryModel,
+      required: [true, "Product category is required."],
     },
     pictures: {
       type: [String],
