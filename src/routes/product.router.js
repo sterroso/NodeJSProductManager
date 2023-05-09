@@ -13,7 +13,12 @@ router.put("/:productId", ProductController.updateProduct);
 
 router.delete("/:productId", ProductController.deleteProduct);
 
-router.get("/:productId/pictures");
+router.get("/:productId/pictures", ProductController.getProductPictures);
+
+router.get(
+  "/:productId/pictures/:pictureIndex",
+  ProductController.getProductPictureAt
+);
 
 router.post("/:productId/pictures", ProductController.addProductPicture);
 

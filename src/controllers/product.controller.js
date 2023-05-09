@@ -163,15 +163,64 @@ export const getProductPictures = async (req, res) => {
   res.status(responseObject.statusCode).json(responseObject.toJSON());
 };
 
+export const getProductPictureAt = async (req, res) => {
+  const responseObject = new ResponseObject();
+
+  const { productId, pictureIndex } = req.params;
+
+  if (!(productId ?? false) || !(pictureIndex ?? false)) {
+    responseObject.status = HttpStatus.BAD_REQUEST;
+    responseObject.error =
+      "Parameters 'productId' and 'pictureIndex' are mandatory.";
+    return res.status(responseObject.statusCode).json(responseObject.toJSON());
+  }
+
+  try {
+    const picture = await ProductService.getPictureBy(productId, pictureIndex);
+
+    if (!picture) {
+      responseObject.status = HttpStatus.NOT_FOUND;
+      responseObject.error = "No picture was found.";
+    } else {
+      responseObject.payload = picture;
+    }
+  } catch (error) {
+    responseObject.status = HttpStatus.INTERNAL_SERVER_ERROR;
+    responseObject.error = error.message;
+  }
+
+  res.status(responseObject.statusCode).json(responseObject.toJSON());
+};
+
 export const addProductPicture = async (req, res) => {
   const responseObject = new ResponseObject();
 
   const { productId } = req.params;
 
-  const { body } = req;
+  const { pictureUrl, pictureList } = req.body;
+
+  if (!(pictureUrl ?? false) && !(pictureList ?? false)) {
+    responseObject.status = HttpStatus.BAD_REQUEST;
+    responseObject.error =
+      "Must provide a value for either 'pictureUrl' or 'pictureList' parameters.";
+
+    return res.status(responseObject.statusCode).json(responseObject.toJSON());
+  }
 
   try {
-    const result = await ProductService.addPicture(productId, body);
+    let result;
+
+    if (pictureList) {
+      const pictureListArray = Array.from(pictureList);
+
+      if (pictureUrl ?? false) {
+        pictureListArray.push(pictureUrl);
+      }
+
+      result = await ProductService.addManyPictures(productId, pictureList);
+    } else {
+      result = await ProductService.addOnePicture(productId, pictureUrl);
+    }
 
     if (result) {
       responseObject.payload = result;
@@ -192,7 +241,7 @@ export const updateProductPicture = async (req, res) => {
 
   const { productId, pictureIndex } = req.params;
 
-  const { pictureUrl } = req;
+  const { pictureUrl } = req.body;
 
   try {
     const result = await ProductService.updatePicture(

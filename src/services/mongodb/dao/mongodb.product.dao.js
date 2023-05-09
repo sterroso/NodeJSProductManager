@@ -7,6 +7,11 @@ export default class ProductDAO {
   /* ------------------------- Whole products methods ------------------------- */
   static getAll = async (query, options) => {
     try {
+      options = {
+        ...options,
+        populate: { path: "category", select: "name -_id" },
+      };
+
       const result = await ProductModel.paginate(query, options);
 
       if (result.count > 0) {
@@ -25,7 +30,10 @@ export default class ProductDAO {
 
   static getBy = async (query) => {
     try {
-      const result = await ProductModel.findOne(query);
+      const result = await ProductModel.findOne(query).populate({
+        path: "category",
+        select: "name -_id",
+      });
 
       if (!result) {
         throw new Error("Product not found.");
@@ -40,8 +48,10 @@ export default class ProductDAO {
   static create = async (doc) => {
     try {
       const categoryRe = new RegExp(
-        `${doc?.category || DEFAULT_CATEGORY_NAME}`
+        `${doc?.category || DEFAULT_CATEGORY_NAME}`,
+        "i"
       );
+
       const existingCategory = await CategoryDAO.exists({
         name: categoryRe,
       });
@@ -68,9 +78,22 @@ export default class ProductDAO {
 
   static update = async (productId, doc) => {
     try {
+      const categoryRe = new RegExp(
+        `${doc?.category || DEFAULT_CATEGORY_NAME}`,
+        "i"
+      );
+
+      const existingCategory = await CategoryDAO.exists({ name: categoryRe });
+
+      const parsedCategory = existingCategory
+        ? existingCategory
+        : await CategoryDAO.create({
+            name: (doc?.category || DEFAULT_CATEGORY_NAME).toLowerCase(),
+          });
+
       const updatedProduct = await ProductModel.findOneAndUpdate(
         { _id: productId },
-        ProductDTO.getUpdateDocument(doc)
+        ProductDTO.getUpdateDocument({ ...doc, category: parsedCategory })
       );
 
       if (!updatedProduct) {
@@ -120,6 +143,8 @@ export default class ProductDAO {
     }
 
     try {
+      pictureIndex = Number(pictureIndex);
+
       const product = await ProductModel.findOne({ _id: productId });
 
       if (!product) {
@@ -136,7 +161,7 @@ export default class ProductDAO {
     }
   };
 
-  static addPicture = async (productId, pictureUrl) => {
+  static addOnePicture = async (productId, pictureUrl) => {
     if (!productId) {
       throw new Error("A valid product's Id must be provided.");
     }
@@ -154,7 +179,31 @@ export default class ProductDAO {
 
       product.pictures.push(pictureUrl);
 
-      return await product.save();
+      return ProductDTO.getLeanDocument(await product.save());
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  static addManyPictures = async (productId, picturesList) => {
+    if (!(productId ?? false)) {
+      throw new Error("A valid product's Id must be provided.");
+    }
+
+    if (!(picturesList ?? false)) {
+      throw new Error("A list of pictures must be provided.");
+    }
+
+    try {
+      const product = await ProductModel.findOne({ _id: productId });
+
+      if (!(product ?? false)) {
+        throw new Error("Product not found.");
+      }
+
+      product.pictures = product.pictures.concat(picturesList);
+
+      return ProductDTO.getLeanDocument(await product.save());
     } catch (error) {
       throw new Error(error.message);
     }
@@ -186,7 +235,7 @@ export default class ProductDAO {
 
       product.pictures.splice(pictureIndex, 1, pictureUrl);
 
-      return await product.save();
+      return ProductDTO.getLeanDocument(await product.save());
     } catch (error) {
       throw new Error(error.message);
     }
@@ -214,7 +263,7 @@ export default class ProductDAO {
 
       product.pictures.splice(pictureIndex, 1);
 
-      return await product.save();
+      return ProductDTO.getLeanDocument(await product.save());
     } catch (error) {
       throw new Error(error.message);
     }
@@ -234,7 +283,7 @@ export default class ProductDAO {
 
       product.pictures = [];
 
-      return await product.save();
+      return ProductDTO.getLeanDocument(await product.save());
     } catch (error) {
       throw new Error(error.message);
     }

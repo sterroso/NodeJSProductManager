@@ -110,14 +110,23 @@ const queryParser = (params, exactSearches) => {
       continue;
     }
 
-    Object.defineProperty(returnObject.query, key, {
-      writable: true,
-      configurable: false,
-      enumerable: true,
-      value: exactSearches.includes(key)
-        ? `${value}`
-        : new RegExp(`${value}`, "ig"),
-    });
+    if ((exactSearches ?? []).length === 0) {
+      Object.defineProperty(returnObject.query, key, {
+        writable: true,
+        configurable: false,
+        enumerable: true,
+        value: new RegExp(`${value}`, "ig"),
+      });
+    } else {
+      Object.defineProperty(returnObject.query, key, {
+        writable: true,
+        configurable: false,
+        enumerable: true,
+        value: exactSearches.includes(key)
+          ? `${value}`
+          : new RegExp(`${value}`, "ig"),
+      });
+    }
   }
 
   return returnObject;

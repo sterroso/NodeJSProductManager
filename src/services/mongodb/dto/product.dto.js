@@ -1,3 +1,5 @@
+import { DEFAULT_CATEGORY_NAME } from "../../../constants/category.constants.js";
+
 class ProductDTO {
   static formats = {
     SMALL: "small",
@@ -10,7 +12,7 @@ class ProductDTO {
   /**
    * Returns a product's id and title, for list items.
    *
-   * @param {{_id: import("mongoose").Types.ObjectId, code: string, title: string, description: string: price: number, stock: number, category: import("mongoose").Types.ObjectId, pictures?: [string]}} document A product's MongoDB document.
+   * @param {{_id?: import("mongoose").Types.ObjectId, code?: string, title?: string, description?: string: price?: number, stock?: number, category?: import("mongoose").Types.ObjectId | { _id?: import("mongoose").Types.ObjectId, name: string, description?: string }, pictures?: [string]}} document A product's MongoDB document.
    * @returns a product's id and title.
    */
   static getListItem(document) {
@@ -20,7 +22,7 @@ class ProductDTO {
   /**
    * Returns a lean product document with unnecessary properties stripped.
    *
-   * @param {{_id: import("mongoose").Types.ObjectId, code: string, title: string, description: string: price: number, stock: number, category: import("mongoose").Types.ObjectId, pictures?: [string]}} document A product's MongoDB document.
+   * @param {{_id?: import("mongoose").Types.ObjectId, code?: string, title?: string, description?: string: price?: number, stock?: number, category?: import("mongoose").Types.ObjectId | { _id?: import("mongoose").Types.ObjectId, name: string, description?: string }, pictures?: [string]}} document A product's MongoDB document.
    * @returns a lean product document.
    */
   static getLeanDocument(document) {
@@ -31,7 +33,7 @@ class ProductDTO {
    * Returns an object containing properties required to create a new
    * _product_ document in a MongoDB collection.
    *
-   * @param {{code: string, title: string, description: string: price: number, stock: number, category: import("mongoose").Types.ObjectId}} document A partial product's MongoDB document.
+   * @param {{code: string, title: string, description: string: price: number, stock: number, category?: string}} document A partial product's MongoDB document.
    * @returns an object containing all properties required to create a
    * new _product_ document in a MongoDB collection.
    */
@@ -43,7 +45,7 @@ class ProductDTO {
    * Returns an object containing properties required to update an existing
    * _product_ document in a MongoDB collection.
    *
-   * @param {{title: string, description: string: price: number, stock: number, category: import("mongoose").Types.ObjectId}} document A partial product's MongoDB document.
+   * @param {{title?: string, description?: string: price?: number, stock?: number, category?: string, pictures?: [string]}} document A partial product's MongoDB document.
    * @returns an object containing properties required to update an existing
    * _product_ document in a MongoDB collection.
    */
@@ -55,11 +57,13 @@ class ProductDTO {
    * Returns an object with a subset of properties from the original
    * MongoDB product document.
    *
-   * @param {{_id: import("mongoose").Types.ObjectId, code: string, title: string, description: string: price: number, stock?: number, category: import("mongoose").Types.ObjectId, pictures?: [string]}} document A product's MongoDB document.
+   * @param {{_id?: import("mongoose").Types.ObjectId, code?: string, title?: string, description?: string: price?: number, stock?: number, category?: import("mongoose").Types.ObjectId | { _id?: import("mongoose").Types.ObjectId, name: string, description?: string }, pictures?: [string]}} document A product's MongoDB document.
    * @param {{format?: string | ProductDTO.formats }} options A transformation format.
    * @returns A document with a subset of properties from the original MongoDB product document.
    */
   static get(document, options = { format: ProductDTO.formats.SMALL }) {
+    let transformedCategory = DEFAULT_CATEGORY_NAME;
+
     switch (options?.format) {
       case ProductDTO.formats.SMALL:
         return {
@@ -75,6 +79,12 @@ class ProductDTO {
           stock: document?.stock || 0,
         };
       case ProductDTO.formats.LARGE:
+        transformedCategory = DEFAULT_CATEGORY_NAME;
+
+        if (document?.category || false) {
+          transformedCategory = document.category?.name || document.category;
+        }
+
         return {
           id: document._id,
           code: document.code,
@@ -82,7 +92,7 @@ class ProductDTO {
           description: document.description,
           price: document.price,
           stock: document?.stock || 0,
-          category: document.category,
+          category: transformedCategory,
           pictures: document?.pictures.map((pic) => new URL(pic)) || [],
         };
       case ProductDTO.formats.CREATE:
@@ -92,7 +102,7 @@ class ProductDTO {
           description: document.description,
           price: document?.price || 0.01,
           stock: document?.stock || 1,
-          category: document.category,
+          category: document?.category || DEFAULT_CATEGORY_NAME,
           pictures: document?.pictures || [],
         };
       case ProductDTO.formats.UPDATE:

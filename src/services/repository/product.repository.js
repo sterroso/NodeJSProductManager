@@ -37,9 +37,17 @@ export default class ProductRepository extends GenericRepository {
     }
   };
 
-  addPicture = async (productId, pictureUrl) => {
+  addOnePicture = async (productId, pictureUrl) => {
     try {
-      return await this.dao.addPicture(productId, pictureUrl);
+      return await this.dao.addOnePicture(productId, pictureUrl);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  addManyPictures = async (productId, picturesList) => {
+    try {
+      return await this.dao.addManyPictures(productId, picturesList);
     } catch (error) {
       throw new Error(error.message);
     }
