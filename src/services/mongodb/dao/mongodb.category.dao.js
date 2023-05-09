@@ -9,19 +9,17 @@ export default class CategoryDAO {
     }
   };
 
-  static getById = async (categoryId) => {
+  static getBy = async (query) => {
     try {
-      return await CategoryModel.findOne({ _id: categoryId });
+      return await CategoryModel.findOne(query);
     } catch (error) {
       throw new Error(error.message);
     }
   };
 
-  static getByName = async (categoryName) => {
+  static exists = async (query) => {
     try {
-      const nameRegExp = new RegExp(categoryName, "gi");
-
-      return await CategoryModel.findOne({ name: nameRegExp });
+      return await CategoryModel.exists(query);
     } catch (error) {
       throw new Error(error.message);
     }

@@ -11,7 +11,7 @@ export const getAllProducts = async (req, res) => {
   const { query, options } = PaginatedQueryParser(req.query);
 
   try {
-    const results = await ProductService.getAllProducts(query, options);
+    const results = await ProductService.getAll(query, options);
 
     if (results?.count) {
       responseObject = Object.assign(responseObject, results);
@@ -34,7 +34,7 @@ export const getProductById = async (req, res) => {
   const { productId } = req.params;
 
   try {
-    const result = await ProductService.getProductById(productId);
+    const result = await ProductService.getById(productId);
 
     if (result) {
       responseObject.payload = result;
@@ -50,13 +50,35 @@ export const getProductById = async (req, res) => {
   res.status(responseObject.statusCode).json(responseObject.toJSON());
 };
 
+export const getProductByCode = async (req, res) => {
+  const responseObject = new ResponseObject();
+
+  const { productCode } = req.params;
+
+  try {
+    const result = await ProductService.getByCode(productCode);
+
+    if (result) {
+      responseObject.payload = result;
+    } else {
+      responseObject.status = HttpStatus.NOT_FOUND;
+      responseObject.error = "No product was found with the provided Code.";
+    }
+  } catch (error) {
+    responseObject.status = HttpStatus.INTERNAL_SERVER_ERROR;
+    responseObject.error = error.message;
+  }
+
+  res.status(responseObject.statusCode).json(responseObject.toJSON);
+};
+
 export const createProduct = async (req, res) => {
   const responseObject = new ResponseObject(HttpStatus.CREATED);
 
   const { body } = req;
 
   try {
-    const result = await ProductService.createProduct(body);
+    const result = await ProductService.create(body);
 
     if (result) {
       responseObject.payload = result;
@@ -81,7 +103,7 @@ export const updateProduct = async (req, res) => {
   const { body } = req;
 
   try {
-    const result = await ProductService.updateProduct(productId, body);
+    const result = await ProductService.update(productId, body);
 
     if (result) {
       responseObject.payload = result;
@@ -103,7 +125,7 @@ export const deleteProduct = async (req, res) => {
   const { productId } = req.params;
 
   try {
-    const result = await ProductService.deleteProduct(productId);
+    const result = await ProductService.delete(productId);
 
     if (result) {
       responseObject.payload = result;
@@ -125,7 +147,7 @@ export const getProductPictures = async (req, res) => {
   const { productId } = req.params;
 
   try {
-    const result = await ProductService.getProductPictures(productId);
+    const result = await ProductService.getAllPictures(productId);
 
     if (result) {
       responseObject.payload = result;
@@ -149,7 +171,7 @@ export const addProductPicture = async (req, res) => {
   const { body } = req;
 
   try {
-    const result = await ProductService.addProductPicture(productId, body);
+    const result = await ProductService.addPicture(productId, body);
 
     if (result) {
       responseObject.payload = result;
@@ -173,7 +195,7 @@ export const updateProductPicture = async (req, res) => {
   const { pictureUrl } = req;
 
   try {
-    const result = await ProductService.updateProductPicture(
+    const result = await ProductService.updatePicture(
       productId,
       pictureIndex,
       pictureUrl
@@ -199,10 +221,7 @@ export const deleteProductPicture = async (req, res) => {
   const { productId, pictureIndex } = req.params;
 
   try {
-    const result = await ProductService.deleteProductPicture(
-      productId,
-      pictureIndex
-    );
+    const result = await ProductService.deletePicture(productId, pictureIndex);
 
     if (result) {
       responseObject.payload = result;
@@ -224,7 +243,7 @@ export const clearProductPictures = async (req, res) => {
   const { productId } = req.params;
 
   try {
-    const result = await ProductService.clearProductPictures(productId);
+    const result = await ProductService.clearPictures(productId);
 
     if (result) {
       responseObject.payload = result;

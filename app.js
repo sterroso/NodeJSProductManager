@@ -6,6 +6,7 @@ import cors from "cors";
 import appConfig from "./src/config/app.config.js";
 
 //Imports de enrutadores (código propio)
+import ProductsRouter from "./src/routes/product.router.js";
 import UtilsRouter from "./src/routes/utils.router.js";
 
 // Objeto app
@@ -25,6 +26,7 @@ app.use(
 
 // Configuración de enrutadores
 app.use("/utils", UtilsRouter);
+app.use("/api/products", ProductsRouter);
 
 // Exportación de la app
 export default app;

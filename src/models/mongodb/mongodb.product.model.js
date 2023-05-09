@@ -1,7 +1,7 @@
 import { Schema, model, Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
-import CategoryModel from "./mongodb.category.model";
+import CategoryModel from "./mongodb.category.model.js";
 
 export const ProductSchema = new Schema(
   {

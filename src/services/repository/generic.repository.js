@@ -13,6 +13,10 @@ export default class GenericRepository {
     return await this.dao.getBy(params);
   };
 
+  exists = async (query) => {
+    return await this.dao.exists(query);
+  };
+
   create = async (doc) => {
     return await this.dao.create(doc);
   };

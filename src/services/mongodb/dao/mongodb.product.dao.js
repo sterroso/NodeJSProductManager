@@ -1,5 +1,7 @@
 import ProductModel from "../../../models/mongodb/mongodb.product.model.js";
 import ProductDTO from "../dto/product.dto.js";
+import { DEFAULT_CATEGORY_NAME } from "../../../constants/category.constants.js";
+import CategoryDAO from "./mongodb.category.dao.js";
 
 export default class ProductDAO {
   /* ------------------------- Whole products methods ------------------------- */
@@ -21,9 +23,9 @@ export default class ProductDAO {
     }
   };
 
-  static getById = async (productId) => {
+  static getBy = async (query) => {
     try {
-      const result = await ProductModel.findOne({ _id: productId });
+      const result = await ProductModel.findOne(query);
 
       if (!result) {
         throw new Error("Product not found.");
@@ -37,8 +39,21 @@ export default class ProductDAO {
 
   static create = async (doc) => {
     try {
+      const categoryRe = new RegExp(
+        `${doc?.category || DEFAULT_CATEGORY_NAME}`
+      );
+      const existingCategory = await CategoryDAO.exists({
+        name: categoryRe,
+      });
+
+      const parsedCategory = existingCategory
+        ? existingCategory
+        : await CategoryDAO.create({
+            name: (doc?.category || DEFAULT_CATEGORY_NAME).toLowerCase(),
+          });
+
       const newProduct = await ProductModel.create(
-        ProductDTO.getCreateDocument(doc)
+        ProductDTO.getCreateDocument({ ...doc, category: parsedCategory })
       );
 
       if (!newProduct) {
@@ -77,7 +92,7 @@ export default class ProductDAO {
   };
 
   /* --------------------- Only product's pictures methods -------------------- */
-  static getAllProductPictures = async (productId) => {
+  static getAllPictures = async (productId) => {
     if (!productId) {
       throw new Error("A product's Id must be provided.");
     }
@@ -95,7 +110,7 @@ export default class ProductDAO {
     }
   };
 
-  static getPicture = async (productId, pictureIndex = 0) => {
+  static getPictureBy = async (productId, pictureIndex = 0) => {
     if (!productId) {
       throw new Error("A valid product's Id must be provided.");
     }
@@ -198,6 +213,26 @@ export default class ProductDAO {
       }
 
       product.pictures.splice(pictureIndex, 1);
+
+      return await product.save();
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  static clearPictures = async (productId) => {
+    if (!productId) {
+      throw new Error("A valid product's Id must be provided.");
+    }
+
+    try {
+      const product = await ProductModel.findOne({ _id: productId });
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      product.pictures = [];
 
       return await product.save();
     } catch (error) {

@@ -1,7 +1,8 @@
 import { Schema, model, Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
-import USER_ROLES_NAMES, {
+import {
+  USER_ROLES_NAMES,
   DEFAULT_USER_ROLE_NAME,
 } from "../../constants/user.roles.js";
 import USER_GENDERS, {

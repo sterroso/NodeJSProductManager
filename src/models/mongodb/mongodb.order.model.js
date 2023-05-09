@@ -12,7 +12,7 @@ import {
   VALID_CVV_PATTERN,
 } from "../../constants/payment.constants.js";
 import UserModel from "./mongodb.user.model.js";
-import ProductModel from "./mongodb.product.model";
+import ProductModel from "./mongodb.product.model.js";
 
 export const OrderItemSchema = new Schema(
   {
