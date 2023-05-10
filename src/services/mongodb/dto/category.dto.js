@@ -56,7 +56,7 @@ export default class CategoryDTO {
         }
 
         return {
-          name: document.name,
+          name: document.name.toLowerCase(),
           description: document?.description || undefined,
         };
       case CategoryDTO.formats.UPDATE:
@@ -65,7 +65,7 @@ export default class CategoryDTO {
         }
 
         return {
-          name: document?.name || undefined,
+          name: document?.name?.toLowerCase() || undefined,
           description: document?.description || undefined,
         };
       default:

@@ -1,9 +1,20 @@
 import CategoryModel from "../../../models/mongodb/mongodb.category.model.js";
+import CategoryDTO from "../dto/category.dto.js";
 
 export default class CategoryDAO {
   static getAll = async (query, options) => {
     try {
-      return await CategoryModel.paginate(query, options);
+      const results = await CategoryModel.paginate(query, options);
+
+      if (results.count === 0) {
+        throw new Error("No categories were found.");
+      }
+
+      results.payload = results.payload.map((category) =>
+        CategoryDTO.getLeanDocument(category)
+      );
+
+      return results;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -11,7 +22,13 @@ export default class CategoryDAO {
 
   static getBy = async (query) => {
     try {
-      return await CategoryModel.findOne(query);
+      const result = await CategoryModel.findOne(query);
+
+      if (!result) {
+        throw new Error("No category was found.");
+      }
+
+      return CategoryDTO.getLeanDocument(result);
     } catch (error) {
       throw new Error(error.message);
     }
@@ -27,7 +44,7 @@ export default class CategoryDAO {
 
   static create = async (document) => {
     try {
-      return await CategoryModel.create(document);
+      return CategoryDTO.getLeanDocument(await CategoryModel.create(document));
     } catch (error) {
       throw new Error(error.message);
     }
@@ -35,10 +52,10 @@ export default class CategoryDAO {
 
   static update = async (categoryId, document) => {
     try {
-      return await CategoryModel.findOneAndUpdate(
-        { _id: categoryId },
-        document,
-        { new: true }
+      return CategoryDTO.getLeanDocument(
+        await CategoryModel.findOneAndUpdate({ _id: categoryId }, document, {
+          new: true,
+        })
       );
     } catch (error) {
       throw new Error(error.message);
