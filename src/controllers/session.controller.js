@@ -10,7 +10,7 @@ import SessionService from "../services/mongodb/mongodb.session.service.js";
 dotenv.config();
 
 export default class SessionController {
-  static #DEFAULT_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24;
+  static MAX_AGE_IN_MILLIS = 1000 * 60 * 60 * 24;
 
   static register = async (req, res) => {
     const response = new ResponseObject(HttpStatus.CREATED);
@@ -46,13 +46,13 @@ export default class SessionController {
         );
 
         const token = jwt.sign(userCookie, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: "24h",
+          expiresIn: SessionController.MAX_AGE_IN_MILLIS,
         });
 
         return res.status(response.statusCode).cookie("token", token, {
           httpOnly: true,
           signed: true,
-          maxAge: SessionController.#DEFAULT_COOKIE_MAX_AGE,
+          maxAge: SessionController.MAX_AGE_IN_MILLIS,
         });
       } else {
         response.status = HttpStatus.UNAUTHORIZED;
@@ -66,5 +66,18 @@ export default class SessionController {
 
       return res.status(response.statusCode).json(response.toJSON());
     }
+  };
+
+  static getCookie = async (req, res) => {
+    const response = new ResponseObject(HttpStatus.OK);
+
+    try {
+      // TODO: Implement.
+    } catch (error) {
+      response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+      response.error = error.message;
+    }
+
+    res.status(response.statusCode).json(response.toJSON());
   };
 }
