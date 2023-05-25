@@ -9,8 +9,8 @@ export default class GenericRepository {
     return await this.dao.getAll(query, options);
   };
 
-  getBy = async (params) => {
-    return await this.dao.getBy(params);
+  getBy = async (query) => {
+    return await this.dao.getBy(query);
   };
 
   exists = async (query) => {

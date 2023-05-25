@@ -62,57 +62,75 @@ class ProductDTO {
    * @returns A document with a subset of properties from the original MongoDB product document.
    */
   static get(document, options = { format: ProductDTO.formats.SMALL }) {
-    let transformedCategory = DEFAULT_CATEGORY_NAME;
-
     switch (options?.format) {
       case ProductDTO.formats.SMALL:
-        return {
-          id: document._id,
-          title: document.title,
-        };
-      case ProductDTO.formats.MEDIUM:
-        return {
-          id: document._id,
-          code: document.code,
-          title: document.title,
-          price: document.price,
-          stock: document?.stock || 0,
-        };
-      case ProductDTO.formats.LARGE:
-        transformedCategory = DEFAULT_CATEGORY_NAME;
-
-        if (document?.category || false) {
-          transformedCategory = document.category?.name || document.category;
+        try {
+          return {
+            id: document._id,
+            title: document.title,
+          };
+        } catch (error) {
+          throw new Error(error.message);
         }
+      case ProductDTO.formats.MEDIUM:
+        try {
+          return {
+            id: document._id,
+            code: document.code,
+            title: document.title,
+            price: document.price,
+            stock: document?.stock || 0,
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
+      case ProductDTO.formats.LARGE:
+        try {
+          let transformedCategory = DEFAULT_CATEGORY_NAME;
 
-        return {
-          id: document._id,
-          code: document.code,
-          title: document.title,
-          description: document.description,
-          price: document.price,
-          stock: document?.stock || 0,
-          category: transformedCategory,
-          pictures: document?.pictures.map((pic) => new URL(pic)) || [],
-        };
+          if (document?.category || false) {
+            transformedCategory = document.category?.name || document.category;
+          }
+
+          return {
+            id: document._id,
+            code: document.code,
+            title: document.title,
+            description: document.description,
+            price: document.price,
+            stock: document?.stock || 0,
+            category: transformedCategory,
+            pictures: document?.pictures.map((pic) => new URL(pic)) || [],
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       case ProductDTO.formats.CREATE:
-        return {
-          code: document.code,
-          title: document.title,
-          description: document.description,
-          price: document?.price || 0.01,
-          stock: document?.stock || 1,
-          category: document?.category || DEFAULT_CATEGORY_NAME,
-          pictures: document?.pictures || [],
-        };
+        try {
+          return {
+            code: document.code,
+            title: document.title,
+            description: document.description,
+            price: document?.price || 0.01,
+            stock: document?.stock || 1,
+            category: document?.category || DEFAULT_CATEGORY_NAME,
+            pictures: document?.pictures || [],
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       case ProductDTO.formats.UPDATE:
-        return {
-          title: document?.title || undefined,
-          description: document?.description || undefined,
-          price: document?.price || undefined,
-          stock: document?.stock || undefined,
-          category: document?.category || undefined,
-        };
+        try {
+          return {
+            title: document?.title || undefined,
+            description: document?.description || undefined,
+            price: document?.price || undefined,
+            stock: document?.stock || undefined,
+            category: document?.category || undefined,
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       default:
         throw new Error("Unrecognized ProductDTO format.");
     }

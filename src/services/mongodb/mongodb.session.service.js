@@ -1,10 +1,10 @@
 import { compare } from "bcrypt";
 
-import UserDTO from "../dto/user.dto.js";
-import { UserService } from "../../index.js";
+import UserDTO from "./dto/user.dto.js";
+import { UserService } from "../index.js";
 
-export default class SessionDAO {
-  login = async (email, password) => {
+export default class SessionService {
+  static login = async (email, password) => {
     try {
       const user = await UserService.getByEmail(email);
 
@@ -20,7 +20,7 @@ export default class SessionDAO {
     }
   };
 
-  register = async (document) => {
+  static register = async (document) => {
     try {
       const createDoc = await UserDTO.getCreateDocument(document);
 

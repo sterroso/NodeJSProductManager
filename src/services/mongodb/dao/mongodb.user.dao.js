@@ -1,41 +1,32 @@
-import bcrypt from "bcrypt";
-import { DEFAULT_SALT_ROUNDS } from "../../../constants/app.constants.js";
 import UserModel from "../../../models/mongodb/mongodb.user.model.js";
+import UserDTO from "../dto/user.dto.js";
 
 export default class UserDAO {
   static getAll = async (query, options) => {
     try {
-      return await UserModel.paginate(query, options);
+      const users = await UserModel.paginate(query, options);
+
+      if (users.count > 0) {
+        return users.payload.map(
+          async (user) => await UserDTO.getLeanDocument(user)
+        );
+      }
+
+      return [];
     } catch (error) {
       throw new Error(error.message);
     }
   };
 
-  static getById = async (userId) => {
+  static getBy = async (query) => {
     try {
-      return await UserModel.findOne({ _id: userId });
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  };
-
-  static getByEmail = async (email) => {
-    try {
-      return await UserModel.findOne({ email });
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  };
-
-  static credentialsMatch = async (email, password) => {
-    try {
-      const user = await UserModel.findOne({ email });
+      const user = await UserModel.findOne(query);
 
       if (!user) {
         throw new Error("User not found.");
       }
 
-      return await bcrypt.compare(password, user.password);
+      return UserDTO.getLeanDocument(user);
     } catch (error) {
       throw new Error(error.message);
     }
@@ -43,7 +34,7 @@ export default class UserDAO {
 
   static create = async (document) => {
     try {
-      return await UserModel.create(document);
+      return await UserModel.create(await UserDTO.getCreateDocument(document));
     } catch (error) {
       throw new Error(error.message);
     }
@@ -54,24 +45,6 @@ export default class UserDAO {
       return await UserModel.findOneAndUpdate({ _id: userId }, document, {
         new: true,
       });
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  };
-
-  static updatePassword = async (email, currentPassword, newPassword) => {
-    try {
-      if (!UserDAO.credentialsMatch(email, currentPassword)) {
-        throw new Error("Unauthorized.");
-      }
-
-      newPassword = await bcrypt.hash(newPassword, DEFAULT_SALT_ROUNDS);
-
-      return await UserModel.findOneAndUpdate(
-        { email },
-        { password: newPassword },
-        { new: true }
-      );
     } catch (error) {
       throw new Error(error.message);
     }

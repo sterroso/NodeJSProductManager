@@ -1,6 +1,6 @@
 import UserModel from "../../../models/mongodb/mongodb.user.model.js";
 import OrderModel from "../../../models/mongodb/mongodb.order.model.js";
-import ORDER_STATUS from "../../../constants/order.status.js";
+import { ORDER_STATUS } from "../../../constants/order.constants.js";
 
 export default class OrderDAO {
   static getAll = async (query, options) => {
@@ -21,9 +21,7 @@ export default class OrderDAO {
 
   static getByUserId = async (userId, orderStatus = undefined) => {
     if (orderStatus ?? false) {
-      const validStatus = Object.entries(ORDER_STATUS).map((entry) => entry[1]);
-
-      if (!validStatus.some((status) => orderStatus === status)) {
+      if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
         throw new Error(`${orderStatus} is not a valid order status.`);
       }
     }

@@ -11,7 +11,7 @@ router.get("/email/:email", UserController.getUserByEmail);
 
 router.post("/", UserController.createNewUser);
 
-router.update("/:userId", UserController.updateUserById);
+router.put("/:userId", UserController.updateUserById);
 
 router.delete("/:userId", UserController.deleteUserById);
 

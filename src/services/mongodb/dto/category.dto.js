@@ -36,38 +36,54 @@ export default class CategoryDTO {
 
     switch (format ?? CategoryDTO.formats.LEAN) {
       case CategoryDTO.formats.SMALL:
-        return {
-          id: document._id,
-          name: document.name,
-        };
+        try {
+          return {
+            id: document._id,
+            name: document.name,
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       case CategoryDTO.formats.LEAN:
       case CategoryDTO.formats.MEDIUM:
       case CategoryDTO.formats.COMPLETE:
-        return {
-          id: document._id,
-          name: document.name,
-          description: document?.description || "",
-        };
+        try {
+          return {
+            id: document._id,
+            name: document.name,
+            description: document?.description || "",
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       case CategoryDTO.formats.CREATE:
-        if (!(document?.name || false)) {
-          throw new Error(
-            "Category name is a mandatory property. You must provide a value."
-          );
-        }
+        try {
+          if (!(document?.name || false)) {
+            throw new Error(
+              "Category name is a mandatory property. You must provide a value."
+            );
+          }
 
-        return {
-          name: document.name.toLowerCase(),
-          description: document?.description || undefined,
-        };
+          return {
+            name: document.name.toLowerCase(),
+            description: document?.description || undefined,
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       case CategoryDTO.formats.UPDATE:
-        if (!(document?.name || false) && !(document?.description || false)) {
-          throw new Error("Must provide at least one property to update.");
-        }
+        try {
+          if (!(document?.name || false) && !(document?.description || false)) {
+            throw new Error("Must provide at least one property to update.");
+          }
 
-        return {
-          name: document?.name?.toLowerCase() || undefined,
-          description: document?.description || undefined,
-        };
+          return {
+            name: document?.name?.toLowerCase() || undefined,
+            description: document?.description || undefined,
+          };
+        } catch (error) {
+          throw new Error(error.message);
+        }
       default:
         throw new Error("Tansformation format not recognized.");
     }

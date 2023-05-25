@@ -1,25 +1,22 @@
 import { Schema, model, Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import MongoosePaginate from "mongoose-paginate-v2";
-import ORDER_STATUS, {
-  DEFAULT_ORDER_STATUS,
-} from "../../constants/order.status.js";
 import {
+  ORDER_STATUS,
+  DEFAULT_ORDER_STATUS,
   PAYMENT_FORMS,
   DEFAULT_PAYMENT_FORM,
   CARD_TYPES,
   PAYMENT_STATUS,
   VALID_CVV_PATTERN,
-} from "../../constants/payment.constants.js";
+} from "../../constants/order.constants.js";
 import UserModel from "./mongodb.user.model.js";
-import ProductModel from "./mongodb.product.model.js";
 
 export const OrderItemSchema = new Schema(
   {
-    product: {
-      type: Types.ObjectId,
+    title: {
+      type: String,
       required: true,
-      ref: ProductModel,
     },
     quantity: {
       type: Number,
@@ -31,18 +28,48 @@ export const OrderItemSchema = new Schema(
       required: true,
       min: 0,
     },
+    subtotal: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   {
     timestamps: true,
-    virtuals: {
-      subtotal: {
-        get() {
-          return this.quantity * this.salesPrice;
-        },
-      },
-    },
   }
 );
+
+OrderItemSchema.pre("save", (next) => {
+  if (this.isModified("quantity") || this.isModified("salesPrice")) {
+    this.subtotal = this.quantity * this.salesPrice;
+  }
+
+  next();
+});
+
+export const OrderItemModel = model("OrderItem", OrderItemSchema);
+
+const OrderItemChangeStream = OrderItemModel.watch();
+
+OrderItemChangeStream.on("change", (change) => {
+  if (change.operationType === "update") {
+    const updateFields = change.updateDescription.updatedFields;
+    const orderItemId = change.documentKey._id;
+    OrderItemModel.findByIdAndUpdate(
+      orderItemId,
+      updateFields,
+      { runValidators: true },
+      (err, orderItem) => {
+        if (err) {
+          console.error(
+            `An error occurred while trying to update OrderItem: ${orderItem}`
+          );
+          throw new Error(err.message);
+        }
+      }
+    );
+  }
+});
 
 export const PaymentSchema = new Schema(
   {
@@ -50,14 +77,8 @@ export const PaymentSchema = new Schema(
       type: String,
       required: true,
       validate: {
-        validator: (v) => {
-          const validForms = Object.entries(PAYMENT_FORMS).map(
-            (entry) => entry[1]
-          );
-
-          return validForms.some((form) => form === v);
-        },
-        message: (props) => `${props.value} is not a valid payment form.`,
+        validator: (v) => Object.values(PAYMENT_FORMS).includes(v),
+        message: (props) => `"${props.value}" is not a valid payment form.`,
       },
       default: DEFAULT_PAYMENT_FORM,
     },
@@ -71,14 +92,8 @@ export const PaymentSchema = new Schema(
           );
         },
         validate: {
-          validator: (v) => {
-            const validCardTypes = Object.entries(CARD_TYPES).map(
-              (entry) => entry[1]
-            );
-
-            return validCardTypes.some((type) => type === v);
-          },
-          message: (props) => `${props.value} is not a valid card type.`,
+          validator: (v) => Object.values(CARD_TYPES).includes(v),
+          message: (props) => `"${props.value}" is not a valid card type.`,
         },
       },
       lastDigits: {
@@ -103,10 +118,12 @@ export const PaymentSchema = new Schema(
         validate: {
           validator: (v) => {
             const today = new Date(Date.now());
+            const expDate = new Date(v);
 
-            return Date.parse(v) > today.getMilliseconds();
+            return !isNaN(expDate) && expDate > today;
           },
-          message: (props) => `${props.value} is not a valid expiration date.`,
+          message: (props) =>
+            `"${props.value}" is not a valid expiration date.`,
         },
       },
       cvv: {
@@ -120,10 +137,8 @@ export const PaymentSchema = new Schema(
         minLength: 3,
         maxLEngth: 4,
         validate: {
-          validator: (v) => {
-            return VALID_CVV_PATTERN.test(v);
-          },
-          message: (props) => `${props.value} is not a valid x.`,
+          validator: (v) => VALID_CVV_PATTERN.test(v),
+          message: (props) => `"${props.value}" is not a valid CVV.`,
         },
       },
     },
@@ -141,14 +156,8 @@ export const PaymentSchema = new Schema(
       type: String,
       required: false,
       validate: {
-        validator: (v) => {
-          const validPaymentStatus = Object.entries(PAYMENT_STATUS).map(
-            (entry) => entry[1]
-          );
-
-          return validPaymentStatus.some((status) => status === v);
-        },
-        message: (props) => `${props.value} is not a valid payment status.`,
+        validator: (v) => Object.values(PAYMENT_STATUS).includes(v),
+        message: (props) => `"${props.value}" is not a valid payment status.`,
       },
     },
   },
@@ -166,6 +175,18 @@ export const OrderSchema = new Schema(
       type: [OrderItemSchema],
       required: true,
       default: [],
+    },
+    itemCount: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    total: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
     },
     shipping: {
       contact: {
@@ -233,30 +254,14 @@ export const OrderSchema = new Schema(
       required: true,
       default: DEFAULT_ORDER_STATUS,
       validate: {
-        validator: (v) => {
-          const validOrderStatus = Object.entries(ORDER_STATUS).map(
-            (entry) => entry[1]
-          );
-
-          return validOrderStatus.some((status) => status === v);
-        },
-        message: (props) => `${props.value} is not a valid order status.`,
+        validator: (v) => Object.values(ORDER_STATUS).includes(v),
+        message: (props) => `"${props.value}" is not a valid order status.`,
       },
     },
   },
   {
     timestamps: true,
     virtuals: {
-      count: {
-        get() {
-          return this.items.reduce((count, item) => count + item.quantity, 0);
-        },
-      },
-      total: {
-        get() {
-          return this.items.reduce((sum, item) => sum + item.subtotal, 0);
-        },
-      },
       amountPaid: {
         get() {
           return this.payment.reduce((sum, pay) => {
