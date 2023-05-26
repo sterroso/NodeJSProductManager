@@ -20,12 +20,18 @@ export default class RoleDTO {
   static getCreateDocument = (document) =>
     RoleDTO.get(document, { format: RoleDTO.formats.CREATE });
 
+  static getCreateBuiltinRole = (document) =>
+    RoleDTO.get(document, { format: RoleDTO.formats.CREATE, builtIn: true });
+
   static getUpdateDocument = (document) =>
     RoleDTO.get(document, { format: RoleDTO.formats.UPDATE });
 
-  static get = (document, options = { format: RoleDTO.formats.SMALL }) => {
+  static get = (
+    document,
+    options = { format: RoleDTO.formats.SMALL, builtIn: false }
+  ) => {
     if (!document) {
-      throw new Error("Must provide a document to transform.");
+      return null;
     }
 
     switch (options?.format || "none") {
@@ -38,10 +44,10 @@ export default class RoleDTO {
         return {
           id: document._id,
           name: document.name,
-          create: document.create,
-          read: document.read,
-          update: document.update,
-          delete: document.delete,
+          canCreate: document.canCreate,
+          canRead: document.canRead,
+          canUpdate: document.canUpdate,
+          canDelete: document.canDelete,
         };
       case RoleDTO.formats.CREATE:
         if (!(document?.name || false)) {
@@ -56,217 +62,218 @@ export default class RoleDTO {
 
         return {
           name: document.name,
-          create: {
+          isBuiltin: options?.builtIn || false,
+          canCreate: {
             users:
-              document?.create?.users ||
-              ROLES_PERMISSIONS_SETTINGS.create.users.default,
+              document?.canCreate?.users ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.users.default,
             passwords:
-              document?.create?.passwords ||
-              ROLES_PERMISSIONS_SETTINGS.create.passwords.default,
+              document?.canCreate?.passwords ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.passwords.default,
             sessions:
-              document?.create?.sessions ||
-              ROLES_PERMISSIONS_SETTINGS.create.sessions.default,
+              document?.canCreate?.sessions ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.sessions.default,
             roles:
-              document?.create?.roles ||
-              ROLES_PERMISSIONS_SETTINGS.create.roles.default,
+              document?.canCreate?.roles ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.roles.default,
             carts:
-              document?.create?.carts ||
-              ROLES_PERMISSIONS_SETTINGS.create.carts.default,
+              document?.canCreate?.carts ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.carts.default,
             cartItems:
-              document?.create?.cartItems ||
-              ROLES_PERMISSIONS_SETTINGS.create.cartItems.default,
+              document?.canCreate?.cartItems ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.cartItems.default,
             orders:
-              document?.create?.orders ||
-              ROLES_PERMISSIONS_SETTINGS.create.orders.default,
+              document?.canCreate?.orders ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.orders.default,
             orderItems:
-              document?.create?.orderItems ||
-              ROLES_PERMISSIONS_SETTINGS.create.orderItems.default,
+              document?.canCreate?.orderItems ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.orderItems.default,
             categories:
-              document?.create?.categories ||
-              ROLES_PERMISSIONS_SETTINGS.create.categories.default,
+              document?.canCreate?.categories ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.categories.default,
             products:
-              document?.create?.products ||
-              ROLES_PERMISSIONS_SETTINGS.create.products.default,
+              document?.canCreate?.products ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.products.default,
             stores:
-              document?.create?.stores ||
-              ROLES_PERMISSIONS_SETTINGS.create.stores.default,
+              document?.canCreate?.stores ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.stores.default,
             warehouses:
-              document?.create?.warehouses ||
-              ROLES_PERMISSIONS_SETTINGS.create.warehouses.default,
+              document?.canCreate?.warehouses ||
+              ROLES_PERMISSIONS_SETTINGS.canCreate.warehouses.default,
           },
-          read: {
+          canRead: {
             users:
-              document?.read?.users ||
-              ROLES_PERMISSIONS_SETTINGS.read.users.default,
+              document?.canRead?.users ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.users.default,
             passwords:
-              document?.read?.passwords ||
-              ROLES_PERMISSIONS_SETTINGS.read.passwords.default,
+              document?.canRead?.passwords ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.passwords.default,
             sessions:
-              document?.read?.sessions ||
-              ROLES_PERMISSIONS_SETTINGS.read.sessions.default,
+              document?.canRead?.sessions ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.sessions.default,
             roles:
-              document?.read?.roles ||
-              ROLES_PERMISSIONS_SETTINGS.read.roles.default,
+              document?.canRead?.roles ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.roles.default,
             carts:
-              document?.read?.carts ||
-              ROLES_PERMISSIONS_SETTINGS.read.carts.default,
+              document?.canRead?.carts ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.carts.default,
             cartItems:
-              document?.read?.cartItems ||
-              ROLES_PERMISSIONS_SETTINGS.read.cartItems.default,
+              document?.canRead?.cartItems ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.cartItems.default,
             orders:
-              document?.read?.orders ||
-              ROLES_PERMISSIONS_SETTINGS.read.orders.default,
+              document?.canRead?.orders ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.orders.default,
             orderItems:
-              document?.read?.orderItems ||
-              ROLES_PERMISSIONS_SETTINGS.read.orderItems.default,
+              document?.canRead?.orderItems ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.orderItems.default,
             categories:
-              document?.read?.categories ||
-              ROLES_PERMISSIONS_SETTINGS.read.categories.default,
+              document?.canRead?.categories ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.categories.default,
             products:
-              document?.read?.products ||
-              ROLES_PERMISSIONS_SETTINGS.read.products.default,
+              document?.canRead?.products ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.products.default,
             stores:
-              document?.read?.stores ||
-              ROLES_PERMISSIONS_SETTINGS.read.stores.default,
+              document?.canRead?.stores ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.stores.default,
             warehouses:
-              document?.read?.warehouses ||
-              ROLES_PERMISSIONS_SETTINGS.read.warehouses.default,
+              document?.canRead?.warehouses ||
+              ROLES_PERMISSIONS_SETTINGS.canRead.warehouses.default,
           },
-          update: {
+          canUpdate: {
             users:
-              document?.update?.users ||
-              ROLES_PERMISSIONS_SETTINGS.update.users.default,
+              document?.canUpdate?.users ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.users.default,
             passwords:
-              document?.update?.passwords ||
-              ROLES_PERMISSIONS_SETTINGS.update.passwords.default,
+              document?.canUpdate?.passwords ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.passwords.default,
             sessions:
-              document?.update?.sessions ||
-              ROLES_PERMISSIONS_SETTINGS.update.sessions.default,
+              document?.canUpdate?.sessions ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.sessions.default,
             roles:
-              document?.update?.roles ||
-              ROLES_PERMISSIONS_SETTINGS.update.roles.default,
+              document?.canUpdate?.roles ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.roles.default,
             carts:
-              document?.update?.carts ||
-              ROLES_PERMISSIONS_SETTINGS.update.carts.default,
+              document?.canUpdate?.carts ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.carts.default,
             cartItems:
-              document?.update?.cartItems ||
-              ROLES_PERMISSIONS_SETTINGS.update.cartItems.default,
+              document?.canUpdate?.cartItems ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.cartItems.default,
             orders:
-              document?.update?.orders ||
-              ROLES_PERMISSIONS_SETTINGS.update.orders.default,
+              document?.canUpdate?.orders ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.orders.default,
             orderItems:
-              document?.update?.orderItems ||
-              ROLES_PERMISSIONS_SETTINGS.update.orderItems.default,
+              document?.canUpdate?.orderItems ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.orderItems.default,
             categories:
-              document?.update?.categories ||
-              ROLES_PERMISSIONS_SETTINGS.update.categories.default,
+              document?.canUpdate?.categories ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.categories.default,
             products:
-              document?.update?.products ||
-              ROLES_PERMISSIONS_SETTINGS.update.products.default,
+              document?.canUpdate?.products ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.products.default,
             stores:
-              document?.update?.stores ||
-              ROLES_PERMISSIONS_SETTINGS.update.stores.default,
+              document?.canUpdate?.stores ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.stores.default,
             warehouses:
-              document?.update?.warehouses ||
-              ROLES_PERMISSIONS_SETTINGS.update.warehouses.default,
+              document?.canUpdate?.warehouses ||
+              ROLES_PERMISSIONS_SETTINGS.canUpdate.warehouses.default,
           },
-          delete: {
+          canDelete: {
             users:
-              document?.delete?.users ||
-              ROLES_PERMISSIONS_SETTINGS.delete.users.default,
+              document?.canDelete?.users ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.users.default,
             passwords:
-              document?.delete?.passwords ||
-              ROLES_PERMISSIONS_SETTINGS.delete.passwords.default,
+              document?.canDelete?.passwords ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.passwords.default,
             sessions:
-              document?.delete?.sessions ||
-              ROLES_PERMISSIONS_SETTINGS.delete.sessions.default,
+              document?.canDelete?.sessions ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.sessions.default,
             roles:
-              document?.delete?.roles ||
-              ROLES_PERMISSIONS_SETTINGS.delete.roles.default,
+              document?.canDelete?.roles ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.roles.default,
             carts:
-              document?.delete?.carts ||
-              ROLES_PERMISSIONS_SETTINGS.delete.carts.default,
+              document?.canDelete?.carts ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.carts.default,
             cartItems:
-              document?.delete?.cartItems ||
-              ROLES_PERMISSIONS_SETTINGS.delete.cartItems.default,
+              document?.canDelete?.cartItems ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.cartItems.default,
             orders:
-              document?.delete?.orders ||
-              ROLES_PERMISSIONS_SETTINGS.delete.orders.default,
+              document?.canDelete?.orders ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.orders.default,
             orderItems:
-              document?.delete?.orderItems ||
-              ROLES_PERMISSIONS_SETTINGS.delete.orderItems.default,
+              document?.canDelete?.orderItems ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.orderItems.default,
             categories:
-              document?.delete?.categories ||
-              ROLES_PERMISSIONS_SETTINGS.delete.categories.default,
+              document?.canDelete?.categories ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.categories.default,
             products:
-              document?.delete?.products ||
-              ROLES_PERMISSIONS_SETTINGS.delete.products.default,
+              document?.canDelete?.products ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.products.default,
             stores:
-              document?.delete?.stores ||
-              ROLES_PERMISSIONS_SETTINGS.delete.stores.default,
+              document?.canDelete?.stores ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.stores.default,
             warehouses:
-              document?.delete?.warehouses ||
-              ROLES_PERMISSIONS_SETTINGS.delete.warehouses.default,
+              document?.canDelete?.warehouses ||
+              ROLES_PERMISSIONS_SETTINGS.canDelete.warehouses.default,
           },
         };
       case RoleDTO.formats.UPDATE:
         return {
           name: document.name,
-          create: {
-            users: document?.create?.users || undefined,
-            passwords: document?.create?.passwords || undefined,
-            sessions: document?.create?.sessions || undefined,
-            roles: document?.create?.roles || undefined,
-            carts: document?.create?.carts || undefined,
-            cartItems: document?.create?.cartItems || undefined,
-            orders: document?.create?.orders || undefined,
-            orderItems: document?.create?.orderItems || undefined,
-            categories: document?.create?.categories || undefined,
-            products: document?.create?.products || undefined,
-            stores: document?.create?.stores || undefined,
-            warehouses: document?.create?.warehouses || undefined,
+          canCreate: {
+            users: document?.canCreate?.users || undefined,
+            passwords: document?.canCreate?.passwords || undefined,
+            sessions: document?.canCreate?.sessions || undefined,
+            roles: document?.canCreate?.roles || undefined,
+            carts: document?.canCreate?.carts || undefined,
+            cartItems: document?.canCreate?.cartItems || undefined,
+            orders: document?.canCreate?.orders || undefined,
+            orderItems: document?.canCreate?.orderItems || undefined,
+            categories: document?.canCreate?.categories || undefined,
+            products: document?.canCreate?.products || undefined,
+            stores: document?.canCreate?.stores || undefined,
+            warehouses: document?.canCreate?.warehouses || undefined,
           },
-          read: {
-            users: document?.read?.users || undefined,
-            passwords: document?.read?.passwords || undefined,
-            sessions: document?.read?.sessions || undefined,
-            roles: document?.read?.roles || undefined,
-            carts: document?.read?.carts || undefined,
-            cartItems: document?.read?.cartItems || undefined,
-            orders: document?.read?.orders || undefined,
-            orderItems: document?.read?.orderItems || undefined,
-            categories: document?.read?.categories || undefined,
-            products: document?.read?.products || undefined,
-            stores: document?.read?.stores || undefined,
-            warehouses: document?.read?.warehouses || undefined,
+          canRead: {
+            users: document?.canRead?.users || undefined,
+            passwords: document?.canRead?.passwords || undefined,
+            sessions: document?.canRead?.sessions || undefined,
+            roles: document?.canRead?.roles || undefined,
+            carts: document?.canRead?.carts || undefined,
+            cartItems: document?.canRead?.cartItems || undefined,
+            orders: document?.canRead?.orders || undefined,
+            orderItems: document?.canRead?.orderItems || undefined,
+            categories: document?.canRead?.categories || undefined,
+            products: document?.canRead?.products || undefined,
+            stores: document?.canRead?.stores || undefined,
+            warehouses: document?.canRead?.warehouses || undefined,
           },
-          update: {
-            users: document?.update?.users || undefined,
-            passwords: document?.update?.passwords || undefined,
-            sessions: document?.update?.sessions || undefined,
-            roles: document?.update?.roles || undefined,
-            carts: document?.update?.carts || undefined,
-            cartItems: document?.update?.cartItems || undefined,
-            orders: document?.update?.orders || undefined,
-            orderItems: document?.update?.orderItems || undefined,
-            categories: document?.update?.categories || undefined,
-            products: document?.update?.products || undefined,
-            stores: document?.update?.stores || undefined,
-            warehouses: document?.update?.warehouses || undefined,
+          canUpdate: {
+            users: document?.canUpdate?.users || undefined,
+            passwords: document?.canUpdate?.passwords || undefined,
+            sessions: document?.canUpdate?.sessions || undefined,
+            roles: document?.canUpdate?.roles || undefined,
+            carts: document?.canUpdate?.carts || undefined,
+            cartItems: document?.canUpdate?.cartItems || undefined,
+            orders: document?.canUpdate?.orders || undefined,
+            orderItems: document?.canUpdate?.orderItems || undefined,
+            categories: document?.canUpdate?.categories || undefined,
+            products: document?.canUpdate?.products || undefined,
+            stores: document?.canUpdate?.stores || undefined,
+            warehouses: document?.canUpdate?.warehouses || undefined,
           },
-          delete: {
-            users: document?.delete?.users || undefined,
-            passwords: document?.delete?.passwords || undefined,
-            sessions: document?.delete?.sessions || undefined,
-            roles: document?.delete?.roles || undefined,
-            carts: document?.delete?.carts || undefined,
-            cartItems: document?.delete?.cartItems || undefined,
-            orders: document?.delete?.orders || undefined,
-            orderItems: document?.delete?.orderItems || undefined,
-            categories: document?.delete?.categories || undefined,
-            products: document?.delete?.products || undefined,
-            stores: document?.delete?.stores || undefined,
-            warehouses: document?.delete?.warehouses || undefined,
+          canDelete: {
+            users: document?.canDelete?.users || undefined,
+            passwords: document?.canDelete?.passwords || undefined,
+            sessions: document?.canDelete?.sessions || undefined,
+            roles: document?.canDelete?.roles || undefined,
+            carts: document?.canDelete?.carts || undefined,
+            cartItems: document?.canDelete?.cartItems || undefined,
+            orders: document?.canDelete?.orders || undefined,
+            orderItems: document?.canDelete?.orderItems || undefined,
+            categories: document?.canDelete?.categories || undefined,
+            products: document?.canDelete?.products || undefined,
+            stores: document?.canDelete?.stores || undefined,
+            warehouses: document?.canDelete?.warehouses || undefined,
           },
         };
       default:

@@ -7,12 +7,14 @@ export default class UserDAO {
       const users = await UserModel.paginate(query, options);
 
       if (users.count > 0) {
-        return users.payload.map(
+        users.payload = users.payload.map(
           async (user) => await UserDTO.getLeanDocument(user)
         );
+
+        return users;
       }
 
-      return [];
+      return null;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -22,11 +24,11 @@ export default class UserDAO {
     try {
       const user = await UserModel.findOne(query);
 
-      if (!user) {
-        throw new Error("User not found.");
+      if (user) {
+        return UserDTO.getLeanDocument(user);
       }
 
-      return UserDTO.getLeanDocument(user);
+      return null;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -34,7 +36,15 @@ export default class UserDAO {
 
   static create = async (document) => {
     try {
-      return await UserModel.create(await UserDTO.getCreateDocument(document));
+      const createDoc = await UserDTO.getCreateDocument(document);
+
+      const newUser = await UserModel.create(createDoc);
+
+      if (newUser) {
+        return await UserDTO.getLeanDocument(newUser);
+      }
+
+      return null;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -42,9 +52,21 @@ export default class UserDAO {
 
   static update = async (userId, document) => {
     try {
-      return await UserModel.findOneAndUpdate({ _id: userId }, document, {
-        new: true,
-      });
+      const updateDoc = await UserDTO.getUpdateDocument(document);
+
+      const updatedUser = await UserModel.findOneAndUpdate(
+        { _id: userId },
+        updateDoc,
+        {
+          new: true,
+        }
+      );
+
+      if (updatedUser) {
+        return await UserDTO.getLeanDocument(updatedUser);
+      }
+
+      return null;
     } catch (error) {
       throw new Error(error.message);
     }

@@ -1,24 +1,6 @@
-export const USER_ROLES = {
-  USER: "user",
-  PREMIUM: "premium",
-  MANAGER: "manager",
-  ADMIN: "admin",
-  DEVELOPER: "developer",
-  TESTER: "tester",
-};
-
-export const DEFAULT_USER_ROLE = USER_ROLES.USER;
-
-export const SELF_USER = "self";
-
-export const USER_ROLE_PERMISSIONS = {
-  CREATE_USER: [USER_ROLES.ADMIN, USER_ROLES.DEVELOPER, USER_ROLES.TESTER],
-  UPDATE_USER: [
-    SELF_USER,
-    USER_ROLES.ADMIN,
-    USER_ROLES.DEVELOPER,
-    USER_ROLES.TESTER,
-  ],
-  RESET_USER_PASSWORD: [SELF_USER],
-  DELETE_USER: [USER_ROLES.ADMIN, USER_ROLES.DEVELOPER, USER_ROLES.TESTER],
+export const INITIAL_ADMIN_USER = {
+  email: "admin@localhost",
+  password: "##must_change$$",
+  firstName: "Admin",
+  lastName: "User",
 };

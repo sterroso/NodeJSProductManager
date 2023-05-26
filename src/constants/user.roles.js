@@ -10,7 +10,7 @@ export const USER_BUILTIN_ROLES = {
   /* -------------------------- Normal (default) user ------------------------- */
   USER: {
     name: DEFAULT_USER_ROLE_NAME,
-    create: {
+    canCreate: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -24,7 +24,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.NONE,
       warehouses: ROLES_PERMISSIONS.NONE,
     },
-    read: {
+    canRead: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.SELF,
@@ -38,7 +38,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    update: {
+    canUpdate: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.NONE,
@@ -52,7 +52,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.NONE,
       warehouses: ROLES_PERMISSIONS.NONE,
     },
-    delete: {
+    canDelete: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -70,7 +70,7 @@ export const USER_BUILTIN_ROLES = {
   /* ------------------------------ Premium user ------------------------------ */
   USER_PREMIUM: {
     name: DEFAULT_PREMIUM_USER_ROLE_NAME,
-    create: {
+    canCreate: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -84,7 +84,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.NONE,
       warehouses: ROLES_PERMISSIONS.NONE,
     },
-    read: {
+    canRead: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.SELF,
@@ -98,7 +98,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    update: {
+    canUpdate: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.NONE,
@@ -112,7 +112,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.NONE,
       warehouses: ROLES_PERMISSIONS.NONE,
     },
-    delete: {
+    canDelete: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -130,7 +130,7 @@ export const USER_BUILTIN_ROLES = {
   /* ------------------------ E-Commerce store manager ------------------------ */
   MANAGER: {
     name: DEFAULT_MANAGER_ROLE_NAME,
-    create: {
+    canCreate: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -144,7 +144,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    read: {
+    canRead: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.SELF,
@@ -158,7 +158,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    update: {
+    canUpdate: {
       users: ROLES_PERMISSIONS.SELF,
       passwords: ROLES_PERMISSIONS.SELF,
       roles: ROLES_PERMISSIONS.NONE,
@@ -172,7 +172,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    delete: {
+    canDelete: {
       users: ROLES_PERMISSIONS.NONE,
       passwords: ROLES_PERMISSIONS.NONE,
       roles: ROLES_PERMISSIONS.NONE,
@@ -190,7 +190,7 @@ export const USER_BUILTIN_ROLES = {
   /* -------------------------------- Sysadmin -------------------------------- */
   ADMIN: {
     name: DEFAULT_ADMIN_ROLE_NAME,
-    create: {
+    canCreate: {
       users: ROLES_PERMISSIONS.ALL,
       passwords: ROLES_PERMISSIONS.ALL,
       roles: ROLES_PERMISSIONS.ALL,
@@ -204,7 +204,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    read: {
+    canRead: {
       users: ROLES_PERMISSIONS.ALL,
       passwords: ROLES_PERMISSIONS.ALL,
       roles: ROLES_PERMISSIONS.ALL,
@@ -218,7 +218,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    update: {
+    canUpdate: {
       users: ROLES_PERMISSIONS.ALL,
       passwords: ROLES_PERMISSIONS.ALL,
       roles: ROLES_PERMISSIONS.ALL,
@@ -232,7 +232,7 @@ export const USER_BUILTIN_ROLES = {
       stores: ROLES_PERMISSIONS.ALL,
       warehouses: ROLES_PERMISSIONS.ALL,
     },
-    delete: {
+    canDelete: {
       users: ROLES_PERMISSIONS.ALL,
       passwords: ROLES_PERMISSIONS.ALL,
       roles: ROLES_PERMISSIONS.ALL,

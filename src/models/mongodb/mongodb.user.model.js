@@ -17,7 +17,7 @@ export const UserSchema = new Schema(
     emailConfirmed: {
       type: Boolean,
       required: true,
-      default: 0,
+      default: false,
     },
     emailConfirmedOn: {
       type: Date,
@@ -26,21 +26,21 @@ export const UserSchema = new Schema(
     password: {
       type: String,
       required: true,
-      minLEngth: 3,
+      minLength: 3,
     },
     firstName: {
       type: String,
       required: true,
-      minLEngth: 3,
+      minLength: 3,
     },
     lastName: {
       type: String,
       required: true,
-      minLEngth: 3,
+      minLength: 3,
     },
     dateOfBirth: {
       type: Date,
-      required: true,
+      required: false,
     },
     gender: {
       type: String,

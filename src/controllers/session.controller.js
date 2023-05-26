@@ -67,17 +67,4 @@ export default class SessionController {
       return res.status(response.statusCode).json(response.toJSON());
     }
   };
-
-  static getCookie = async (req, res) => {
-    const response = new ResponseObject(HttpStatus.OK);
-
-    try {
-      // TODO: Implement.
-    } catch (error) {
-      response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-      response.error = error.message;
-    }
-
-    res.status(response.statusCode).json(response.toJSON());
-  };
 }

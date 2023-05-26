@@ -1,9 +1,5 @@
 import { hash } from "bcrypt";
 import { DEFAULT_SALT_ROUNDS } from "../../../constants/app.constants.js";
-import {
-  DEFAULT_USER_ROLE_NAME,
-  USER_ROLES_NAMES,
-} from "../../../constants/user.roles.js";
 import USER_GENDERS, {
   DEFAULT_USER_GENDER,
 } from "../../../constants/user.genders.js";
@@ -85,9 +81,10 @@ class UserDTO {
           id: `${document._id}`,
           email: `${document.email}`,
           name: `${document.firstName} ${document.lastName}`,
-          role: `${document?.role || DEFAULT_USER_ROLE_NAME}`,
+          role: `${document?.role || undefined}`,
         };
       case UserDTO.formats.LARGE:
+      case UserDTO.formats.LEAN:
         return {
           id: document._id,
           email: document.email,
@@ -125,10 +122,6 @@ class UserDTO {
             !Object.values(USER_GENDERS).includes(document?.gender || "none")
           ) {
             document.gender = DEFAULT_USER_GENDER;
-          }
-
-          if (!USER_ROLES_NAMES.includes(document?.role || "none")) {
-            document.role = DEFAULT_USER_ROLE_NAME;
           }
 
           /* ------------- Parse date of birth provided through parameters ------------ */

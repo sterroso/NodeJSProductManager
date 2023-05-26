@@ -1,5 +1,5 @@
 import PaginatedResponseObject from "../common/paginatedResponseObject.js";
-import ResponseObject from "../common/responseObject";
+import ResponseObject from "../common/responseObject.js";
 import HttpStatus from "../constants/http.status.js";
 import { RoleService } from "../services/index.js";
 import QueryParser from "../utils/PaginatedQueryParser.js";

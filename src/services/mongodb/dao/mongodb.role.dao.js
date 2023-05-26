@@ -4,13 +4,13 @@ import RoleDTO from "../dto/role.dto.js";
 export default class UserDAO {
   static getAll = async (query, options) => {
     try {
-      const allUsers = await Role.find(query, {}, options);
+      const allRoles = await Role.find(query, {}, options);
 
-      if (!allUsers || allUsers.length === 0) {
-        throw new Error("Users not found.");
+      if (allRoles.length > 0) {
+        return allRoles.map((role) => RoleDTO.getListItem(role));
       }
 
-      return allUsers.map((user) => RoleDTO.getListItem(user));
+      return null;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -18,13 +18,7 @@ export default class UserDAO {
 
   static getBy = async (query) => {
     try {
-      const user = await Role.findOne(query);
-
-      if (!user) {
-        throw new Error("User not found.");
-      }
-
-      return RoleDTO.getLeanDocument(user);
+      return RoleDTO.getLeanDocument(await Role.findOne(query));
     } catch (error) {
       throw new Error(error.message);
     }
@@ -32,9 +26,7 @@ export default class UserDAO {
 
   static create = async (document) => {
     try {
-      const createDoc = RoleDTO.getCreateDocument(document);
-
-      return await Role.create(createDoc);
+      return RoleDTO.getLeanDocument(await Role.create(document));
     } catch (error) {
       throw new Error(error.message);
     }
@@ -42,10 +34,8 @@ export default class UserDAO {
 
   static update = async (query, document) => {
     try {
-      const updateDoc = RoleDTO.getUpdateDocument(document);
-
       return RoleDTO.getLeanDocument(
-        await Role.findOneAndUpdate(query, updateDoc, { new: true })
+        await Role.findOneAndUpdate(query, document, { new: true })
       );
     } catch (error) {
       throw new Error(error.message);

@@ -12,8 +12,10 @@ export const ROLES_PERMISSIONS = {
   NONE: "none",
 };
 
+export const DEFAULT_USER_IS_BUILTIN = false;
+
 export const ROLES_PERMISSIONS_SETTINGS = {
-  create: {
+  canCreate: {
     users: {
       enum: [
         ROLES_PERMISSIONS.ALL,
@@ -95,7 +97,7 @@ export const ROLES_PERMISSIONS_SETTINGS = {
       default: ROLES_PERMISSIONS.NONE,
     },
   },
-  read: {
+  canRead: {
     users: {
       enum: [
         ROLES_PERMISSIONS.ALL,
@@ -177,7 +179,7 @@ export const ROLES_PERMISSIONS_SETTINGS = {
       default: ROLES_PERMISSIONS.ALL,
     },
   },
-  update: {
+  canUpdate: {
     users: {
       enum: [
         ROLES_PERMISSIONS.ALL,
@@ -259,7 +261,7 @@ export const ROLES_PERMISSIONS_SETTINGS = {
       default: ROLES_PERMISSIONS.NONE,
     },
   },
-  delete: {
+  canDelete: {
     users: {
       enum: [
         ROLES_PERMISSIONS.ALL,
