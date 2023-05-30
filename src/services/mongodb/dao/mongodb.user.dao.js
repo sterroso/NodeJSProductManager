@@ -2,6 +2,8 @@ import { compare } from "bcrypt";
 
 import User from "../../../models/mongodb/mongodb.user.model.js";
 import UserDTO from "../dto/user.dto.js";
+import { RoleService } from "../../index.js";
+import RoleDTO from "../dto/role.dto.js";
 
 export default class UserDAO {
   static getAll = async (query, options) => {
@@ -25,6 +27,12 @@ export default class UserDAO {
       const user = await User.findOne(query);
 
       if (user) {
+        const userRole = await RoleService.getById(user.role);
+
+        if (userRole) {
+          user.role = RoleDTO.getListItem(userRole);
+        }
+
         return UserDTO.getLeanDocument(user);
       }
 

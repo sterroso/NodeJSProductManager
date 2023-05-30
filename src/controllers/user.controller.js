@@ -135,7 +135,8 @@ export const createNewUser = async (req, res) => {
 
     if (!isAuthorized) {
       response.status = HttpStatus.FORBIDDEN;
-      response.error = "Resource not available with the provided credentials.";
+      response.error =
+        "Resource cannot be created with the provided credentials.";
     } else {
       const { body } = req;
 
@@ -170,36 +171,62 @@ export const createNewUser = async (req, res) => {
 export const updateUserById = async (req, res) => {
   const response = new ResponseObject();
 
-  const { userId } = req.params;
+  const { role, user } = req;
 
-  if (!(userId ?? false)) {
-    response.status = HttpStatus.BAD_REQUEST;
-    response.error = "Must provide the userId parameter.";
+  if (!role || !user) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    const { userId } = req.params;
 
-    return res.status(response.statusCode).json(response.toJSON());
-  }
+    if (!(userId ?? false)) {
+      response.status = HttpStatus.BAD_REQUEST;
+      response.error = "Must provide the userId parameter.";
 
-  const { body } = req;
+      return res.status(response.statusCode).json(response.toJSON());
+    }
 
-  if (!(body ?? false)) {
-    response.status = HttpStatus.BAD_REQUEST;
-    response.error = "Must provide user's update paremeters.";
+    const isAuthorized =
+      role.canUpdate.users === ROLES_PERMISSIONS.ALL ||
+      (role.canUpdate.users === ROLES_PERMISSIONS.SELF && user.id === userId);
 
-    return res.status(response.statusCode).json(response.toJSON());
-  }
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error =
+        "Resource cannot be updated with the provided credentials.";
+    } else {
+      const { body } = req;
 
-  try {
-    response.payload = await UserService.update(userId, body);
-  } catch (error) {
-    response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-    response.error = error.message;
+      if (!(body ?? false)) {
+        response.status = HttpStatus.BAD_REQUEST;
+        response.error = "Must provide user's update paremeters.";
+
+        return res.status(response.statusCode).json(response.toJSON());
+      }
+
+      try {
+        const updatedUser = await UserService.update(userId, body);
+
+        if (!updatedUser) {
+          response.status = HttpStatus.NOT_FOUND;
+          response.error = "User not found.";
+        } else {
+          response.payload = updatedUser;
+        }
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
+    }
   }
 
   res.status(response.statusCode).json(response.toJSON());
 };
 
 export const deleteUserById = async (req, res) => {
-  const response = new ResponseObject(HttpStatus.NO_CONTENT);
+  const response = new ResponseObject(HttpStatus.OK);
+
+  const { role, user } = req;
 
   const { userId } = req.params;
 
@@ -210,11 +237,26 @@ export const deleteUserById = async (req, res) => {
     return res.status(response.statusCode).json(response.toJSON());
   }
 
-  try {
-    response.payload = await UserService.delete(userId);
-  } catch (error) {
-    response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-    response.error = error.message;
+  if (!role || !user) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    const isAuthorized =
+      role.canDelete.users === ROLES_PERMISSIONS.ALL ||
+      (role.canDelete.users === ROLES_PERMISSIONS.SELF && user.id === userId);
+
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error =
+        "Resource cannot be deleted with the provided credentials.";
+    } else {
+      try {
+        response.payload = await UserService.delete(userId);
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
+    }
   }
 
   res.status(response.statusCode).json(response.toJSON());

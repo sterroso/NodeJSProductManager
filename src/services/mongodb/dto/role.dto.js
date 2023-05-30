@@ -42,12 +42,12 @@ export default class RoleDTO {
         };
       case RoleDTO.formats.LEAN:
         return {
-          id: document._id,
-          name: document.name,
-          canCreate: document.canCreate,
-          canRead: document.canRead,
-          canUpdate: document.canUpdate,
-          canDelete: document.canDelete,
+          id: document?._id || document?.id || undefined,
+          name: document?.name || undefined,
+          canCreate: document?.canCreate || {},
+          canRead: document?.canRead || {},
+          canUpdate: document?.canUpdate || {},
+          canDelete: document?.canDelete || {},
         };
       case RoleDTO.formats.CREATE:
         if (!(document?.name || false)) {

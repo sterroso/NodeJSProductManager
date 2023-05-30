@@ -1,6 +1,4 @@
 import GenericRepository from "./generic.repository.js";
-import { RoleService } from "../index.js";
-import RoleDTO from "../mongodb/dto/role.dto.js";
 
 export default class UserRepository extends GenericRepository {
   constructor(dao) {
@@ -11,19 +9,11 @@ export default class UserRepository extends GenericRepository {
     try {
       const user = await this.dao.getBy({ _id: userId });
 
-      if (user) {
-        const userRole = RoleDTO.getListItem(
-          await RoleService.getById(user.role)
-        );
-
-        if (userRole) {
-          user.role = userRole;
-        }
-
-        return user;
+      if (!user) {
+        return null;
       }
 
-      return null;
+      return user;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -31,7 +21,13 @@ export default class UserRepository extends GenericRepository {
 
   getByEmail = async (email) => {
     try {
-      return await this.dao.getBy({ email: email });
+      const user = await this.dao.getBy({ email: email });
+
+      if (!user) {
+        return null;
+      }
+
+      return user;
     } catch (error) {
       throw new Error(error.message);
     }
