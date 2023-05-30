@@ -1,34 +1,84 @@
+import getBuiltinRoles from "../utils/getBuiltinRoles.js";
+import { DEFAULT_USER_ROLE_NAME } from "../constants/role.constants.js";
 import { UserService } from "../services/index.js";
 import HttpStatus from "../constants/http.status.js";
 import PaginatedResponseObject from "../common/paginatedResponseObject.js";
 import ResponseObject from "../common/responseObject.js";
 import PaginatedQueryParser from "../utils/PaginatedQueryParser.js";
-import UserDTO from "../services/mongodb/dto/user.dto.js";
+import { ROLES_PERMISSIONS } from "../constants/role.constants.js";
 
 export const getAllUsers = async (req, res) => {
   let response = new PaginatedResponseObject(HttpStatus.OK);
 
-  const { query, options } = PaginatedQueryParser(req.query, ["email"]);
+  const { role, user } = req;
 
-  try {
-    const usersPage = await UserService.getAll(query, options);
+  if (!user || !role) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    const isAuthorized = role.canRead.users === ROLES_PERMISSIONS.ALL;
 
-    if (usersPage.count === 0) {
-      response.status = HttpStatus.NOT_FOUND;
-      response.error = "No users were found with the specified parameters.";
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error = "Resource not available with the provided credentials.";
     } else {
-      response = PaginatedResponseObject.parse(usersPage);
+      const { query, options } = PaginatedQueryParser(req.query, {
+        exactSearches: ["email"],
+      });
+
+      try {
+        const usersPage = await UserService.getAll(query, options);
+
+        if (usersPage.count === 0) {
+          response.status = HttpStatus.NOT_FOUND;
+          response.error = "No users were found with the specified parameters.";
+        } else {
+          response = PaginatedResponseObject.parse(usersPage);
+        }
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
     }
-  } catch (error) {
-    response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-    response.error = error.message;
   }
 
   res.status(response.statusCode).json(response.toJSON());
 };
 
-export const getUSerById = async (req, res) => {
+export const getUserById = async (req, res) => {
   const response = new ResponseObject();
+
+  const { role, user } = req;
+
+  const { userId } = req.params;
+
+  if (!role || !user) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    const isAuthorized =
+      role.canRead.users === ROLES_PERMISSIONS.ALL ||
+      (role.canRead.users === ROLES_PERMISSIONS.SELF && user.id === userId);
+
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error = "Resource not available with the provided credentials.";
+    } else {
+      try {
+        const user = await UserService.getById(userId);
+
+        if (!user) {
+          response.status = HttpStatus.NOT_FOUND;
+          response.error = "User not found";
+        } else {
+          response.payload = user;
+        }
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
+    }
+  }
 
   res.status(response.statusCode).json(response.toJSON());
 };
@@ -36,19 +86,82 @@ export const getUSerById = async (req, res) => {
 export const getUserByEmail = async (req, res) => {
   const response = new ResponseObject();
 
+  const { role, user } = req;
+
+  const { email } = req.params;
+
+  if (!role || !user) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    const isAuthorized = (role.canRead.users =
+      ROLES_PERMISSIONS.ALL ||
+      (role.canRead.users = ROLES_PERMISSIONS.SELF && email === user.email));
+
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error = "Resource not available with the provided credentials.";
+    } else {
+      try {
+        const user = await UserService.getByEmail(email);
+
+        if (!user) {
+          response.status = HttpStatus.NOT_FOUND;
+          response.error = "User not found";
+        } else {
+          response.payload = user;
+        }
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
+    }
+  }
+
   res.status(response.statusCode).json(response.toJSON());
 };
 
 export const createNewUser = async (req, res) => {
   const response = new ResponseObject(HttpStatus.CREATED);
 
-  const { body } = req;
+  const { role, user } = req;
 
-  try {
-    response.payload = await UserService.create(body);
-  } catch (error) {
-    response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-    response.error = error.message;
+  if (!user || !role) {
+    response.status = HttpStatus.UNAUTHORIZED;
+    response.error = "Must provide credentials to access this resource.";
+  } else {
+    // To create a user, the requester role must be allowed to create "all" users.
+    const isAuthorized = role.canCreate.users === ROLES_PERMISSIONS.ALL;
+
+    if (!isAuthorized) {
+      response.status = HttpStatus.FORBIDDEN;
+      response.error = "Resource not available with the provided credentials.";
+    } else {
+      const { body } = req;
+
+      const builtInRoles = await getBuiltinRoles();
+
+      const defaultUserRoleId = builtInRoles.filter(
+        (role) => role.name === DEFAULT_USER_ROLE_NAME
+      );
+
+      const createUserDoc = { ...body, role: defaultUserRoleId };
+
+      try {
+        const newUser = await UserService.create(createUserDoc);
+
+        if (!newUser) {
+          response.status = HttpStatus.BAD_REQUEST;
+          response.error =
+            "User could not be created with the provided parameters.";
+        } else {
+          response.payload = newUser;
+        }
+      } catch (error) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+        response.error = error.message;
+      }
+    }
   }
 
   res.status(response.statusCode).json(response.toJSON());
@@ -66,10 +179,17 @@ export const updateUserById = async (req, res) => {
     return res.status(response.statusCode).json(response.toJSON());
   }
 
-  try {
-    const updateDoc = UserDTO.get(req.body, UserDTO.formats.UPDATE);
+  const { body } = req;
 
-    response.payload = await UserService.update(userId, updateDoc);
+  if (!(body ?? false)) {
+    response.status = HttpStatus.BAD_REQUEST;
+    response.error = "Must provide user's update paremeters.";
+
+    return res.status(response.statusCode).json(response.toJSON());
+  }
+
+  try {
+    response.payload = await UserService.update(userId, body);
   } catch (error) {
     response.status = HttpStatus.INTERNAL_SERVER_ERROR;
     response.error = error.message;

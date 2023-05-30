@@ -1,42 +1,32 @@
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
+  DEFAULT_OFFSET,
   PAGINATE,
 } from "../constants/app.constants.js";
-import {
-  isValidLimit,
-  isValidPage,
-  isValidOffset,
-} from "../common/RequestParameterValidator.js";
+import { isValidPage } from "../common/RequestParameterValidator.js";
 
 /**
  * Parses the list of path parameters from a valid http request passed as
  * an object (req.params), and generates the query and options objects to
  * be passed to a mongoose-paginate-v2 querying function:
- * @example
- * @param {{limit?:string|number, page?:string|limit, offset?:string|number}} params The path parameters object from a valid http request (req.params).
- * @param {[string]} exactSearches A list of strings containing the names of
+ *
+ * @param {{page?:string|number, ...}} params The path parameters object from a valid http request (req.params).
+ * @param {{ exactSearches?: [string] }} options A list of strings containing the names of
  * the properties whose values will be searched exactly as they are passed.
  * For those parameters, the search will not be converted into a regular
  * expression.
  * @returns {{query:object, options:object}}
  */
-const queryParser = (params, exactSearches) => {
+const PaginatedQueryParser = (params, options = { exactSearches: [] }) => {
   let returnObject = {
     query: {},
     options: {
       customLabels: PAGINATE.CUSTOM_LABELS,
+      limit: DEFAULT_LIMIT,
+      offset: DEFAULT_OFFSET,
     },
   };
-
-  if (params?.limit || false) {
-    returnObject.options.limit = isValidLimit(params.limit)
-      ? Number(params.limit)
-      : DEFAULT_LIMIT;
-    delete params.limit;
-  } else {
-    returnObject.options.limit = DEFAULT_LIMIT;
-  }
 
   if (params?.page || false) {
     returnObject.options.page = isValidPage(params.page)
@@ -47,10 +37,28 @@ const queryParser = (params, exactSearches) => {
     returnObject.options.page = DEFAULT_PAGE;
   }
 
+  if (params?.limit || false) {
+    /***************************************************************************
+     *  Disable user-defined limits.
+     *
+    returnObject.options.limit = isValidLimit(params.limit)
+    ? Number(params.limit)
+    : DEFAULT_LIMIT;
+
+    **************************************************************************/
+    delete params.limit;
+  } /* else {
+    returnObject.options.limit = DEFAULT_LIMIT;
+  }
+  */
+
   if (params?.offset || false) {
+    /*************************************************************************
     if (isValidOffset(params.offset)) {
       returnObject.options.offset = Number(params.offset);
     }
+
+    *************************************************************************/
     delete params.offset;
   }
 
@@ -110,7 +118,7 @@ const queryParser = (params, exactSearches) => {
       continue;
     }
 
-    if ((exactSearches ?? []).length === 0) {
+    if ((options?.exactSearches || []).length === 0) {
       Object.defineProperty(returnObject.query, key, {
         writable: true,
         configurable: false,
@@ -122,7 +130,7 @@ const queryParser = (params, exactSearches) => {
         writable: true,
         configurable: false,
         enumerable: true,
-        value: exactSearches.includes(key)
+        value: options.exactSearches.includes(key)
           ? `${value}`
           : new RegExp(`${value}`, "ig"),
       });
@@ -132,4 +140,4 @@ const queryParser = (params, exactSearches) => {
   return returnObject;
 };
 
-export default queryParser;
+export default PaginatedQueryParser;

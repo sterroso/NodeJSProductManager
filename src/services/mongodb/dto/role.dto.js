@@ -37,7 +37,7 @@ export default class RoleDTO {
     switch (options?.format || "none") {
       case RoleDTO.formats.SMALL:
         return {
-          id: document._id,
+          id: document?._id || document?.id || undefined,
           name: document.name,
         };
       case RoleDTO.formats.LEAN:

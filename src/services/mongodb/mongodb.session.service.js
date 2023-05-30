@@ -1,20 +1,18 @@
-import { compare } from "bcrypt";
-
-import UserDTO from "./dto/user.dto.js";
 import { UserService } from "../index.js";
 
 export default class SessionService {
   static login = async (email, password) => {
     try {
+      const credentialsMatch = await UserService.credentialsMatch(
+        email,
+        password
+      );
+
+      if (!credentialsMatch) return null;
+
       const user = await UserService.getByEmail(email);
 
-      if (!user) {
-        throw new Error("User not found.");
-      }
-
-      const credentialsMatch = await compare(password, user.password);
-
-      return credentialsMatch;
+      return { user };
     } catch (error) {
       throw new Error(error.message);
     }
@@ -22,15 +20,13 @@ export default class SessionService {
 
   static register = async (document) => {
     try {
-      const createDoc = await UserDTO.getCreateDocument(document);
-
-      const existingUser = await UserService.getByEmail(createDoc.email);
+      const existingUser = await UserService.getByEmail(document.email);
 
       if (existingUser) {
         throw new Error("User already registered.");
       }
 
-      return await UserDTO.getLeanDocument(await UserService.create(createDoc));
+      return await UserService.create(document);
     } catch (error) {
       throw new Error(error.message);
     }

@@ -12,6 +12,9 @@ export const DEFAULT_LIMIT = 10;
 // Default query page
 export const DEFAULT_PAGE = 1;
 
+// Default query offset
+export const DEFAULT_OFFSET = 0;
+
 // API server port
 export const PORT = 3000;
 

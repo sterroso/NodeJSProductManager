@@ -45,7 +45,7 @@ export const UserSchema = new Schema(
     gender: {
       type: String,
       required: true,
-      enum: USER_GENDERS,
+      enum: Object.values(USER_GENDERS),
       default: DEFAULT_USER_GENDER,
     },
     role: {

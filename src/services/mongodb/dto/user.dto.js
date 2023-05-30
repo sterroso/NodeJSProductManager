@@ -1,4 +1,4 @@
-import { hash } from "bcrypt";
+import { hashSync } from "bcrypt";
 import { DEFAULT_SALT_ROUNDS } from "../../../constants/app.constants.js";
 import USER_GENDERS, {
   DEFAULT_USER_GENDER,
@@ -63,82 +63,49 @@ class UserDTO {
    * @param {{ format?: string }} options
    * @returns An object containing only a subset of the provided document.
    */
-  static async get(document, options = { format: UserDTO.formats.LEAN }) {
+  static get(document, options = { format: UserDTO.formats.LEAN }) {
     switch (options.format) {
       case UserDTO.formats.SMALL:
         return {
-          id: document._id,
+          id: document?._id || document?.id || undefined,
           name: `${document.firstName} ${document.lastName}`,
         };
       case UserDTO.formats.COOKIE:
         return {
-          id: document._id,
+          id: document?._id || document?.id || undefined,
           name: `${document.firstName} ${document.lastName}`,
-          role: document.role,
+          role: document?.role || undefined,
         };
       case UserDTO.formats.MEDIUM:
         return {
-          id: `${document._id}`,
-          email: `${document.email}`,
+          id: document?._id || document?.id || undefined,
+          email: document?.email || undefined,
           name: `${document.firstName} ${document.lastName}`,
-          role: `${document?.role || undefined}`,
+          role: document?.role || undefined,
         };
       case UserDTO.formats.LARGE:
       case UserDTO.formats.LEAN:
         return {
-          id: document._id,
-          email: document.email,
-          firstName: document.firstName,
-          lastName: document.lastName,
+          id: document?._id || document?.id || undefined,
+          email: document?.email || undefined,
+          firstName: document?.firstName || undefined,
+          lastName: document?.lastName || undefined,
           gender: document?.gender || undefined,
           age: document?.age || undefined,
           role: document?.role || undefined,
         };
       case UserDTO.formats.CREATE:
-        try {
-          /* ----------------- Check for mandatory parameters' values ----------------- */
-          if (!(document?.firstName || false)) {
-            throw new Error("User's first name parameter is mandatory.");
-          }
-
-          if (!(document?.lastName || false)) {
-            throw new Error("User's last name paramter is mandatory.");
-          }
-
-          if (!(document?.email || false)) {
-            throw new Error("User's e-mail parameter is mandatory.");
-          }
-
-          if (!(document?.password || false)) {
-            throw new Error("User's password parameter is mandatory.");
-          }
-
-          if (!(document?.dateOfBirth || false)) {
-            throw new Error("User's date of birth parameter is mandatory.");
-          }
-
-          /* ------------ Default values for empty and/or wrong parameters ------------ */
-          if (
-            !Object.values(USER_GENDERS).includes(document?.gender || "none")
-          ) {
-            document.gender = DEFAULT_USER_GENDER;
-          }
-
-          /* ------------- Parse date of birth provided through parameters ------------ */
-          const dob = new Date(Date.parse(document.dateOfBirth));
-
-          return {
-            email: document.email,
-            password: await hash(document.password, DEFAULT_SALT_ROUNDS),
-            firstName: document.firstName,
-            lastName: document.lastName,
-            dateOfBirth: dob,
-            gender: document.gender,
-            role: document.role,
-          };
-        } catch (error) {
-          throw new Error(error.message);
-        }
+        return {
+          email: document?.email || undefined,
+          password: hashSync(document?.password || "", DEFAULT_SALT_ROUNDS),
+          firstName: document?.firstName || undefined,
+          lastName: document?.lastName || undefined,
+          dateOfBirth: !isNaN(Date.parse(document?.dateOfBirth || ""))
+            ? Date.parse(document.dateOfBirth)
+            : undefined,
+          gender: document?.gender || DEFAULT_USER_GENDER,
+          role: document?.role || undefined,
+        };
       case UserDTO.formats.UPDATE:
         try {
           /* ------------- At least, one value must be provided for update ------------ */
@@ -227,7 +194,7 @@ class UserDTO {
             email: document.email,
             resetToken:
               document?.oldPassword || document?.passwordResetKey || undefined,
-            newPassword: document.newPassword,
+            newPassword: hashSync(document.newPassword, DEFAULT_SALT_ROUNDS),
           };
         } catch (error) {
           throw new Error(error.message);

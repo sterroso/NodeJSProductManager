@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
+import appConfig from "../config/app.config.js";
 import { UserService, RoleService } from "../services/index.js";
 import HttpStatus from "../constants/http.status.js";
 import ResponseObject from "../common/responseObject.js";
@@ -11,7 +12,7 @@ const auth = async (req, res, next) => {
   const response = new ResponseObject(); // ResponseObject to return errors.
 
   try {
-    const token = req.signedCookies.token;
+    const token = req?.signedCookies?.token || undefined;
 
     if (!token) {
       response.status = HttpStatus.UNAUTHORIZED;
@@ -20,9 +21,9 @@ const auth = async (req, res, next) => {
       return res.status(response.statusCode).json(response.toJSON());
     }
 
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(token, appConfig.signedCookies.secret);
 
-    const userId = decodedToken.id;
+    const userId = decodedToken.uid;
 
     const existingUser = await UserService.getById(userId);
 
@@ -33,7 +34,7 @@ const auth = async (req, res, next) => {
       return res.status(response.statusCode).json(response.toJSON());
     }
 
-    const existingRole = await RoleService.getById(existingUser.role);
+    const existingRole = await RoleService.getById(existingUser.role.id);
 
     if (!existingRole) {
       response.status = HttpStatus.NOT_FOUND;

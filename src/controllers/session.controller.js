@@ -1,17 +1,11 @@
-import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
+import appConfig from "../config/app.config.js";
 import ResponseObject from "../common/responseObject.js";
 import HttpStatus from "../constants/http.status.js";
-import { UserService } from "../services/index.js";
-import UserDTO from "../services/mongodb/dto/user.dto.js";
 import SessionService from "../services/mongodb/mongodb.session.service.js";
 
-dotenv.config();
-
 export default class SessionController {
-  static MAX_AGE_IN_MILLIS = 1000 * 60 * 60 * 24;
-
   static register = async (req, res) => {
     const response = new ResponseObject(HttpStatus.CREATED);
 
@@ -35,30 +29,37 @@ export default class SessionController {
   };
 
   static login = async (req, res) => {
-    const response = new ResponseObject(HttpStatus.NO_CONTENT);
+    const response = new ResponseObject(HttpStatus.OK);
 
     const { email, password } = req.body;
 
     try {
-      if (await SessionService.login(email, password)) {
-        const userCookie = await UserDTO.getCookie(
-          await UserService.getByEmail(email)
-        );
+      const { user } = await SessionService.login(email, password);
 
-        const token = jwt.sign(userCookie, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: SessionController.MAX_AGE_IN_MILLIS,
-        });
-
-        return res.status(response.statusCode).cookie("token", token, {
-          httpOnly: true,
-          signed: true,
-          maxAge: SessionController.MAX_AGE_IN_MILLIS,
-        });
-      } else {
+      if (!user) {
         response.status = HttpStatus.UNAUTHORIZED;
         response.error = "User credentials don't match.";
 
-        return res.staus(response.statusCode).json(response.toJSON());
+        return res.status(response.statusCode).json(response.toJSON());
+      } else {
+        const token = jwt.sign(
+          { uid: user.id },
+          appConfig.signedCookies.secret,
+          {
+            expiresIn: appConfig.signedCookies.maxAge,
+          }
+        );
+
+        response.payload = { message: "User successfully logged in." };
+
+        return res
+          .status(response.statusCode)
+          .cookie("token", token, {
+            httpOnly: true,
+            signed: true,
+            maxAge: appConfig.signedCookies.maxAge,
+          })
+          .json(response.toJSON());
       }
     } catch (error) {
       response.status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -66,5 +67,20 @@ export default class SessionController {
 
       return res.status(response.statusCode).json(response.toJSON());
     }
+  };
+
+  static logout = async (req, res) => {
+    const response = new ResponseObject();
+
+    try {
+      res.clearCookie("token");
+
+      response.payload = { message: "Logout successful." };
+    } catch (error) {
+      response.status = HttpStatus.INTERNAL_SERVER_ERROR;
+      response.error = error.message;
+    }
+
+    res.status(response.statusCode).json(response.toJSON());
   };
 }

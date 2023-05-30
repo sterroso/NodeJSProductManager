@@ -1,15 +1,15 @@
-import UserModel from "../../../models/mongodb/mongodb.user.model.js";
+import { compare } from "bcrypt";
+
+import User from "../../../models/mongodb/mongodb.user.model.js";
 import UserDTO from "../dto/user.dto.js";
 
 export default class UserDAO {
   static getAll = async (query, options) => {
     try {
-      const users = await UserModel.paginate(query, options);
+      const users = await User.paginate(query, options);
 
       if (users.count > 0) {
-        users.payload = users.payload.map(
-          async (user) => await UserDTO.getLeanDocument(user)
-        );
+        users.payload = users.payload.map((user) => UserDTO.getListItem(user));
 
         return users;
       }
@@ -22,7 +22,7 @@ export default class UserDAO {
 
   static getBy = async (query) => {
     try {
-      const user = await UserModel.findOne(query);
+      const user = await User.findOne(query);
 
       if (user) {
         return UserDTO.getLeanDocument(user);
@@ -34,14 +34,26 @@ export default class UserDAO {
     }
   };
 
+  static credentialsMatch = async (email, password) => {
+    try {
+      const user = await User.findOne({ email: email });
+
+      if (!user) return false;
+
+      return await compare(password, user.password);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
   static create = async (document) => {
     try {
-      const createDoc = await UserDTO.getCreateDocument(document);
+      const createDoc = UserDTO.getCreateDocument(document);
 
-      const newUser = await UserModel.create(createDoc);
+      const newUser = await User.create(createDoc);
 
       if (newUser) {
-        return await UserDTO.getLeanDocument(newUser);
+        return UserDTO.getLeanDocument(newUser);
       }
 
       return null;
@@ -52,9 +64,9 @@ export default class UserDAO {
 
   static update = async (userId, document) => {
     try {
-      const updateDoc = await UserDTO.getUpdateDocument(document);
+      const updateDoc = UserDTO.getUpdateDocument(document);
 
-      const updatedUser = await UserModel.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
         { _id: userId },
         updateDoc,
         {
@@ -63,7 +75,7 @@ export default class UserDAO {
       );
 
       if (updatedUser) {
-        return await UserDTO.getLeanDocument(updatedUser);
+        return UserDTO.getLeanDocument(updatedUser);
       }
 
       return null;
@@ -74,7 +86,7 @@ export default class UserDAO {
 
   static delete = async (userId) => {
     try {
-      return await UserModel.findOneAndDelete({ _id: userId });
+      return await User.findOneAndDelete({ _id: userId });
     } catch (error) {
       throw new Error(error.message);
     }

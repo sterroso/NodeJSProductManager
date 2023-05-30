@@ -4,8 +4,10 @@ import SessionController from "../controllers/session.controller.js";
 
 const router = Router();
 
-router.get("/register", SessionController.register);
+router.post("/register", SessionController.register);
 
-router.get("/login", SessionController.login);
+router.post("/login", SessionController.login);
+
+router.get("/logout", SessionController.logout);
 
 export default router;
