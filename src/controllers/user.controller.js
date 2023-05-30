@@ -141,11 +141,11 @@ export const createNewUser = async (req, res) => {
 
       const builtInRoles = await getBuiltinRoles();
 
-      const defaultUserRoleId = builtInRoles.filter(
+      const defaultUserRole = builtInRoles.find(
         (role) => role.name === DEFAULT_USER_ROLE_NAME
       );
 
-      const createUserDoc = { ...body, role: defaultUserRoleId };
+      const createUserDoc = { ...body, role: defaultUserRole.id };
 
       try {
         const newUser = await UserService.create(createUserDoc);

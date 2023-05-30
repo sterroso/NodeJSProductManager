@@ -5,7 +5,7 @@ dotenv.config();
 
 mongoose.set("strictQuery", false);
 
-mongoose.connect(process?.env?.MONGO_URI, (error) => {
+mongoose.connect(process.env.MONGO_URI, (error) => {
   if (error) {
     console.error("🛑 MongoDB Connection could not be established!");
     console.error(error);

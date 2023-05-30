@@ -97,7 +97,9 @@ class UserDTO {
       case UserDTO.formats.CREATE:
         return {
           email: document?.email || undefined,
-          password: hashSync(document?.password || "", DEFAULT_SALT_ROUNDS),
+          password: !(document?.password || false)
+            ? undefined
+            : hashSync(document.password, DEFAULT_SALT_ROUNDS),
           firstName: document?.firstName || undefined,
           lastName: document?.lastName || undefined,
           dateOfBirth: !isNaN(Date.parse(document?.dateOfBirth || ""))
