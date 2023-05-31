@@ -14,6 +14,10 @@ import UsersRouter from "./src/routes/user.router.js";
 import RolesRouter from "./src/routes/role.router.js";
 import SessionRouter from "./src/routes/session.router.js";
 
+// Imports de middlewares
+import httpLogger from "./src/middlewares/httpLogger.middelware.js";
+import errorLogger from "./src/middlewares/errorLogger.middleware.js";
+
 // Objeto app
 const app = e();
 
@@ -30,6 +34,9 @@ app.use(
   })
 );
 
+// Http logger
+app.use(httpLogger);
+
 // Configuración de enrutadores
 app.use("/utils", UtilsRouter);
 app.use("/api/categories", CategoriesRouter);
@@ -37,6 +44,9 @@ app.use("/api/products", ProductsRouter);
 app.use("/api/users", UsersRouter);
 app.use("/api/roles", RolesRouter);
 app.use("/api/session", SessionRouter);
+
+// Error catching logger
+app.use(errorLogger);
 
 // Exportación de la app
 export default app;
